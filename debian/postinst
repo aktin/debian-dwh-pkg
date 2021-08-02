@@ -1,0 +1,72 @@
+#!/bin/bash
+set -e
+
+readonly RES='\e[0m'
+readonly RED='\e[0;31m'
+readonly GRE='\e[0;32m'
+readonly YEL='\e[0;33m'
+readonly BRED='\e[1;31m'
+readonly BGRE='\e[1;32m'
+readonly BYEL='\e[1;33m'
+
+. /usr/share/debconf/confmodule
+DEBCONF_NAME=$(echo $DPKG_MAINTSCRIPT_PACKAGE | awk -F '-' '{print $1"-"$2}')
+
+ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
+
+# count databases with name aktin
+PSQL=""
+db_get $DEBCONF_NAME/db_conn
+if [ "$RET" = "unix" ]; then
+	host="localhost"
+	port="5432"
+	PSQL="sudo -u postgres psql"
+	echo "Connecting to postgres via local unix socket."
+else
+	db_get $DEBCONF_NAME/db_host
+	host="$RET"
+	db_get $DEBCONF_NAME/db_port
+	port="$RET"
+	db_get $DEBCONF_NAME/db_user
+	user="$RET"
+	db_get $DEBCONF_NAME/db_pass
+	pass="$RET"
+	PSQL="psql postgresql://$user:$pass@$host:$port?sslmode=require"
+	echo "Connecting to postgres via TCP/IP to $host:$port."
+fi
+
+WAITCOUNT=0
+while ! systemctl start postgresql.service 2>/dev/null; do
+	if [ $WAITCOUNT -lt 12 ]; then
+		echo -e "${BRED}Database not yet installed. Waiting ...${RES}"
+		((WAITCOUNT++))
+		sleep 5
+	else
+		echo -e "${BRED}Database not yet installed. Aborting ...${RES}"
+		exit 1
+	fi
+done
+systemctl enable postgresql.service
+
+if  [[ $(eval "$PSQL -l" | grep "aktin" | wc -l) == 0 ]]; then
+
+	# add aktin data to i2b2 database
+	echo -e "Seeding i2b2 database with AKTIN data ..."
+	eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database/addon_i2b2metadata.i2b2.sql" >/dev/null
+	eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
+
+	# create database aktin and respective user
+	echo -e "Creating AKTIN database ..."
+	eval "$PSQL -v ON_ERROR_STOP=1 -f /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database/aktin_postgres_init.sql" >/dev/null
+else
+	echo -e "AKTIN database already exists. Skipping ..."
+fi
+
+sed -e "s/__HOST__/$host/g" \
+    -e "s/__PORT__/$port/g" \
+    /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/datasource/aktin-ds.xml > /opt/wildfly/standalone/deployments/aktin-ds.xml
+
+chown -R wildfly:wildfly /var/lib/aktin
+
+systemctl start wildfly.service
+
