@@ -1,5 +1,5 @@
---- standalone2.xml	2021-08-17 13:44:06.347568200 +0200
-+++ standalone1.xml	2021-08-17 13:43:39.404610400 +0200
+--- a/standalone/configuration/standalone.xml	2021-08-17 13:44:06.347568200 +0200
++++ b/standalone/configuration/standalone.xml	2021-08-17 13:43:39.404610400 +0200
 @@ -490,8 +490,8 @@
          <subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" default-security-domain="other" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
              <buffer-cache name="default"/>
