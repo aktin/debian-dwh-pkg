@@ -71,6 +71,13 @@ else
 	echo -e "AKTIN database already exists. Skipping ..."
 fi
 
+# run database update scripts
+for sqlfile in /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database-update/*
+do
+	eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f $sqlfile" >/dev/null
+done
+
+# deploy aktin datasource
 sed -e "s/__HOST__/$host/g" \
     -e "s/__PORT__/$port/g" \
     /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/datasource/aktin-ds.xml > /opt/wildfly/standalone/deployments/aktin-ds.xml

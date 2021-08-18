@@ -55,6 +55,13 @@ function database_postinstall() {
 	cp -r "${DRESOURCES}/database" "${DBUILD}${DDBPOSTINSTALL}"
 }
 
+function database_update_postinstall() {
+	DDBUPDATEPOSTINSTALL="$1"
+
+	mkdir -p "$(dirname "${DBUILD}${DDBUPDATEPOSTINSTALL}")"
+	cp -r "${DRESOURCES}/database-update" "${DBUILD}${DDBUPDATEPOSTINSTALL}"
+}
+
 function datasource_postinstall() {
 	DDSPOSTINSTALL="$1"
 
@@ -71,5 +78,6 @@ function build_linux() {
 	aktin_dir "/var/lib/aktin/import"
 	aktin_dir "/var/lib/aktin/update"
 	database_postinstall "/usr/share/${PACKAGE}/database"
+	database_update_postinstall "/usr/share/${PACKAGE}/database-update"
 	datasource_postinstall "/usr/share/${PACKAGE}/datasource"
 }
