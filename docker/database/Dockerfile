@@ -6,4 +6,3 @@ COPY ./sql/aktin_postgres_drop.sql /sql.d/aktin_drop.sql
 RUN cat /sql.d/10_i2b2_addon_metadata.sql >>/docker-entrypoint-initdb.d/init.sql
 RUN cat /sql.d/11_i2b2_addon_crcdata.sql >>/docker-entrypoint-initdb.d/init.sql
 RUN cat /sql.d/20_aktin_init.sql >>/docker-entrypoint-initdb.d/init.sql
-

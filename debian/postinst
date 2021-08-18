@@ -13,7 +13,7 @@ readonly BYEL='\e[1;33m'
 DEBCONF_NAME=$(echo $DPKG_MAINTSCRIPT_PACKAGE | awk -F '-' '{print $1"-"$2}')
 
 # create link for aktin.properties
-chown wildfly:wildfly /etc/aktin/aktin.properties
+chown -R wildfly:wildfly /etc/aktin
 ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
 
 # set reverse-proxy configuration for apache2
@@ -82,6 +82,5 @@ sed -e "s/__HOST__/$host/g" \
     -e "s/__PORT__/$port/g" \
     /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/datasource/aktin-ds.xml > /opt/wildfly/standalone/deployments/aktin-ds.xml
 
-chown -R wildfly:wildfly /var/lib/aktin
-chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
+chown -R wildfly:wildfly /var/lib/aktin /opt/wildfly/standalone/deployments
 systemctl start wildfly.service
