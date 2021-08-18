@@ -14,6 +14,13 @@ DEBCONF_NAME=$(echo $DPKG_MAINTSCRIPT_PACKAGE | awk -F '-' '{print $1"-"$2}')
 
 ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
 
+# set reverse-proxy configuration for apache2
+echo "Enabling apache2 proxy_http module ..."
+a2enmod proxy_http >/dev/null || true
+a2enconf aktin-j2ee-reverse-proxy >/dev/null || true
+echo "Restarting apache2 ..."
+systemctl restart apache2
+
 # count databases with name aktin
 PSQL=""
 db_get $DEBCONF_NAME/db_conn
@@ -69,4 +76,3 @@ sed -e "s/__HOST__/$host/g" \
 chown -R wildfly:wildfly /var/lib/aktin
 
 systemctl start wildfly.service
-

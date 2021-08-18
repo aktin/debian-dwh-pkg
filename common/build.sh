@@ -15,10 +15,17 @@ set +a
 
 function dwh_j2ee() {
 	DWILDFLYDEPLOYMENTS="${1}"
-	RAKTIN="https://www.aktin.org/software/repo/org/aktin/dwh/dwh-j2ee"
 
 	mkdir -p "${DBUILD}${DWILDFLYDEPLOYMENTS}"
-	wget -O "${DBUILD}${DWILDFLYDEPLOYMENTS}/dwh-j2ee-${VDWH_J2EE}.ear" "${RAKTIN}/${VDWH_J2EE}/dwh-j2ee-${VDWH_J2EE}.ear"
+	mvn dependency:get -DrepoUrl="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VDWH_J2EE}:ear" -Ddest="${DBUILD}${DWILDFLYDEPLOYMENTS}/"
+}
+
+function apache2_proxy() {
+	DAPACHE2CONF="${1}"
+	WILDFLYHOST="${2}"
+
+	mkdir -p "${DBUILD}${DAPACHE2CONF}"
+	sed -e "s/__WILDFLYHOST__/${WILDFLYHOST}/g" "${DRESOURCES}/aktin-j2ee-reverse-proxy.conf" >"${DBUILD}${DAPACHE2CONF}/aktin-j2ee-reverse-proxy.conf"
 }
 
 function aktin_dir() {
@@ -57,6 +64,7 @@ function datasource_postinstall() {
 
 function build_linux() {
 	dwh_j2ee "/opt/wildfly/standalone/deployments"
+	apache2_proxy "/etc/apache2/conf-available" "localhost"
 	aktin_properties "/etc/aktin"
 	aktin_dir "/var/lib/aktin"
 	aktin_importscripts "/var/lib/aktin/import-scripts"

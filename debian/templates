@@ -25,3 +25,13 @@ Type: password
 Default: localhost
 Description: What ist the password for your PostgreSQL Server?
 
+Template: __PACKAGE__/dis_apache2_proxy_http
+Type: select
+Choices: Yes, No
+Default: Yes
+Description: Do you want to disable it now?
+ During installation the apache2 proxy_http module was enabled.
+ .
+ WARNING: There might be other services which might need this module.
+ .
+ You can re-enable it with `sudo a2enmod proxy_http`
