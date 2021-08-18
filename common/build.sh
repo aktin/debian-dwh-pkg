@@ -28,6 +28,12 @@ function apache2_proxy() {
 	sed -e "s/__WILDFLYHOST__/${WILDFLYHOST}/g" "${DRESOURCES}/aktin-j2ee-reverse-proxy.conf" >"${DBUILD}${DAPACHE2CONF}/aktin-j2ee-reverse-proxy.conf"
 }
 
+function wildfly_standalone_patch() {
+	DWILDFLYHOME="$1"
+
+	patch -p1 -d "${DBUILD}${DWILDFLYHOME}" < "${DRESOURCES}/standalone.xml.patch"
+}
+
 function aktin_dir() {
 	DAKTINDIR="${1}"
 
@@ -71,6 +77,7 @@ function datasource_postinstall() {
 
 function build_linux() {
 	dwh_j2ee "/opt/wildfly/standalone/deployments"
+	wildfly_standalone_patch "/opt/wildfly"
 	apache2_proxy "/etc/apache2/conf-available" "localhost"
 	aktin_properties "/etc/aktin"
 	aktin_dir "/var/lib/aktin"
