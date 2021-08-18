@@ -15,11 +15,16 @@ set +a
 
 function dwh_j2ee() {
 	DWILDFLYDEPLOYMENTS="${1}"
+	RAKTIN="https://www.aktin.org/software/repo/org/aktin/dwh/dwh-j2ee"
 
 	mkdir -p "${DBUILD}${DWILDFLYDEPLOYMENTS}"
-	mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VDWH_J2EE}:ear"
-	# dirty
-	cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${VDWH_J2EE}/dwh-j2ee-${VDWH_J2EE}.ear" "${DBUILD}${DWILDFLYDEPLOYMENTS}/dwh-j2ee-${VDWH_J2EE}.ear"
+	wget -O "${DBUILD}${DWILDFLYDEPLOYMENTS}/dwh-j2ee-${VDWH_J2EE}.ear" "${RAKTIN}/${VDWH_J2EE}/dwh-j2ee-${VDWH_J2EE}.ear"
+}
+
+function aktin_dir() {
+	DAKTINDIR="${1}"
+
+	mkdir -p "${DBUILD}${DAKTINDIR}"
 }
 
 function aktin_properties() {
@@ -29,23 +34,11 @@ function aktin_properties() {
 	cp "${DRESOURCES}/aktin.properties" "${DBUILD}${DAKTINCONF}/"
 }
 
-function aktin_dir() {
-	DAKTIN="${1}"
-
-	mkdir -p "${DBUILD}${DAKTIN}"
-}
-
 function aktin_importscripts() {
 	DAKTINIMPORTSCRIPTS="${1}"
 
 	mkdir -p "$(dirname "${DBUILD}${DAKTINIMPORTSCRIPTS}")"
 	cp -r "${DRESOURCES}/import-scripts" "${DBUILD}${DAKTINIMPORTSCRIPTS}"
-}
-
-function aktin_importdir() {
-	DAKTINIMPORT="${1}"
-
-	mkdir -p "${DBUILD}${DAKTINIMPORT}"
 }
 
 function database_postinstall() {
@@ -67,8 +60,8 @@ function build_linux() {
 	aktin_properties "/etc/aktin"
 	aktin_dir "/var/lib/aktin"
 	aktin_importscripts "/var/lib/aktin/import-scripts"
-	aktin_importdir "/var/lib/aktin/import"
+	aktin_dir "/var/lib/aktin/import"
+	aktin_dir "/var/lib/aktin/update"
 	database_postinstall "/usr/share/${PACKAGE}/database"
 	datasource_postinstall "/usr/share/${PACKAGE}/datasource"
 }
-
