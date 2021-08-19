@@ -14,7 +14,7 @@ case "$1" in
 			a2dismod proxy_http >/dev/null || true
 		fi
 		a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
-		systemctl restart apache2 || true
+		systemctl restart apache2.service || true
 
 		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
 		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml
