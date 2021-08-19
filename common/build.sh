@@ -61,7 +61,7 @@ function move_database_for_postinstall() {
 	cp -r "${DRESOURCES}/database" "${DBUILD}${DDBPOSTINSTALL}"
 }
 
-function move_database_updates_for_postinstall() {
+function move_database_update_for_postinstall() {
 	DDBUPDATEPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDBUPDATEPOSTINSTALL}")"
@@ -85,6 +85,6 @@ function build_linux() {
 	move_aktin_properties "/etc/aktin"
 	move_aktin_importscripts "/var/lib/aktin/import-scripts"
 	move_database_for_postinstall "/usr/share/${PACKAGE}/database"
-	move_database_updates_for_postinstall "/usr/share/${PACKAGE}/database-update"
+	move_database_update_for_postinstall "/usr/share/${PACKAGE}/database-update"
 	move_datasource_for_postinstall "/usr/share/${PACKAGE}/datasource"
 }
