@@ -23,7 +23,7 @@ a2enconf aktin-j2ee-reverse-proxy >/dev/null || true
 echo "Restarting apache2 ..."
 systemctl restart apache2.service
 
-# count databases with name aktin
+# try connecting to postgresql
 PSQL=""
 db_get $DEBCONF_NAME/db_conn
 if [ "$RET" = "unix" ]; then
