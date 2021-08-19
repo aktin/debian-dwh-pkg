@@ -80,7 +80,6 @@ function build_linux() {
 	patch_wildfly_standalone "/opt/wildfly"
 	config_apache2_proxy "/etc/apache2/conf-available" "localhost"
 	create_aktin_dir "/var/lib/aktin"
-	create_aktin_dir "/var/lib/aktin/update"
 	create_aktin_dir "/var/lib/aktin/import"
 	move_aktin_properties "/etc/aktin"
 	move_aktin_importscripts "/var/lib/aktin/import-scripts"
