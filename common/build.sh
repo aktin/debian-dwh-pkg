@@ -13,14 +13,14 @@ set -a
 . "${DRESOURCES}/versions"
 set +a
 
-function dwh_j2ee() {
+function download_dwh_j2ee() {
 	DWILDFLYDEPLOYMENTS="${1}"
 
 	mkdir -p "${DBUILD}${DWILDFLYDEPLOYMENTS}"
 	mvn dependency:get -DrepoUrl="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VDWH_J2EE}:ear" -Ddest="${DBUILD}${DWILDFLYDEPLOYMENTS}/"
 }
 
-function apache2_proxy() {
+function config_apache2_proxy() {
 	DAPACHE2CONF="${1}"
 	WILDFLYHOST="${2}"
 
@@ -28,47 +28,47 @@ function apache2_proxy() {
 	sed -e "s/__WILDFLYHOST__/${WILDFLYHOST}/g" "${DRESOURCES}/aktin-j2ee-reverse-proxy.conf" >"${DBUILD}${DAPACHE2CONF}/aktin-j2ee-reverse-proxy.conf"
 }
 
-function wildfly_standalone_patch() {
+function patch_wildfly_standalone() {
 	DWILDFLYHOME="$1"
 
 	patch -p1 -d "${DBUILD}${DWILDFLYHOME}" < "${DRESOURCES}/standalone.xml.patch"
 }
 
-function aktin_dir() {
+function create_aktin_dir() {
 	DAKTINDIR="${1}"
 
 	mkdir -p "${DBUILD}${DAKTINDIR}"
 }
 
-function aktin_properties() {
+function move_aktin_properties() {
 	DAKTINCONF="${1}"
 
 	mkdir -p "${DBUILD}${DAKTINCONF}"
 	cp "${DRESOURCES}/aktin.properties" "${DBUILD}${DAKTINCONF}/"
 }
 
-function aktin_importscripts() {
+function move_aktin_importscripts() {
 	DAKTINIMPORTSCRIPTS="${1}"
 
 	mkdir -p "$(dirname "${DBUILD}${DAKTINIMPORTSCRIPTS}")"
 	cp -r "${DRESOURCES}/import-scripts" "${DBUILD}${DAKTINIMPORTSCRIPTS}"
 }
 
-function database_postinstall() {
+function move_database_for_postinstall() {
 	DDBPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDBPOSTINSTALL}")"
 	cp -r "${DRESOURCES}/database" "${DBUILD}${DDBPOSTINSTALL}"
 }
 
-function database_update_postinstall() {
+function move_database_updates_for_postinstall() {
 	DDBUPDATEPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDBUPDATEPOSTINSTALL}")"
 	cp -r "${DRESOURCES}/database-update" "${DBUILD}${DDBUPDATEPOSTINSTALL}"
 }
 
-function datasource_postinstall() {
+function move_datasource_for_postinstall() {
 	DDSPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDSPOSTINSTALL}")"
@@ -76,15 +76,15 @@ function datasource_postinstall() {
 }
 
 function build_linux() {
-	dwh_j2ee "/opt/wildfly/standalone/deployments"
-	wildfly_standalone_patch "/opt/wildfly"
-	apache2_proxy "/etc/apache2/conf-available" "localhost"
-	aktin_properties "/etc/aktin"
-	aktin_dir "/var/lib/aktin"
-	aktin_importscripts "/var/lib/aktin/import-scripts"
-	aktin_dir "/var/lib/aktin/import"
-	aktin_dir "/var/lib/aktin/update"
-	database_postinstall "/usr/share/${PACKAGE}/database"
-	database_update_postinstall "/usr/share/${PACKAGE}/database-update"
-	datasource_postinstall "/usr/share/${PACKAGE}/datasource"
+	download_dwh_j2ee "/opt/wildfly/standalone/deployments"
+	patch_wildfly_standalone "/opt/wildfly"
+	config_apache2_proxy "/etc/apache2/conf-available" "localhost"
+	create_aktin_dir "/var/lib/aktin"
+	create_aktin_dir "/var/lib/aktin/update"
+	create_aktin_dir "/var/lib/aktin/import"
+	move_aktin_properties "/etc/aktin"
+	move_aktin_importscripts "/var/lib/aktin/import-scripts"
+	move_database_for_postinstall "/usr/share/${PACKAGE}/database"
+	move_database_updates_for_postinstall "/usr/share/${PACKAGE}/database-update"
+	move_datasource_for_postinstall "/usr/share/${PACKAGE}/datasource"
 }
