@@ -1,0 +1,266 @@
+#! /bin/bash
+
+set -euo pipefail
+
+readonly RESOURCES=$(pwd)/resources
+readonly BINARIES=$RESOURCES/binaries
+readonly PROPERTIES_FILES=$RESOURCES/properties
+readonly XML_FILES=$RESOURCES/xml
+
+readonly RES='\e[0m'
+readonly RED='\e[0;31m'
+readonly GRE='\e[0;32m'
+readonly YEL='\e[0;33m'
+readonly BRED='\e[1;31m'
+readonly BGRE='\e[1;32m'
+readonly BYEL='\e[1;33m'
+
+# destination url
+URL='http://localhost:80/aktin/admin/rest'
+URL_FHIR='http://localhost:80/aktin/cda/fhir/Binary/'
+
+# login into aktin/admin and get bearer-token
+BEARER_TOKEN=$(curl -s --location --request POST $URL/auth/login/ --header 'Content-Type: application/json' --data-raw '{ "username": "i2b2", "password": "demouser" }')
+
+# # # # # # # # #
+# GETTER for import scripts
+# # # # # # # # #
+COUNT_SCRIPTS=$(echo $(curl -s --location --request GET $URL/script | grep -o 'id' | wc -l))
+if [[ $COUNT_SCRIPTS > 1 ]]; then
+    echo -e "${GRE}GET scripts successful (GOT $COUNT_SCRIPTS)${RES}"
+else
+    echo -e "${RED}GET scripts failed (GOT $COUNT_SCRIPTS)${RES}"
+    echo $(curl -s --request GET $URL/script)
+    exit 1
+fi
+
+# # # # # # # # #
+# upload p21.zip with all possible scripts
+# # # # # # # # #
+ID_SCRIPTS=( 'error' 'exit' 'sleep' 'success' )
+for i in "${!ID_SCRIPTS[@]}"
+do
+    RESPONSE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -F "data=@$BINARIES/p21.zip" --location --request POST ''$URL'/file?scriptId='${ID_SCRIPTS[$i]}'&filename=FILE_'$i'' --header 'Authorization: Bearer '$BEARER_TOKEN'')
+    if [[ $RESPONSE_CODE == 201 ]]; then
+	    echo -e "${GRE}UPLOAD of FILE_$i successful ($RESPONSE_CODE)${RES}"
+    else
+	    echo -e "${RED}UPLOAD of FILE_$i failed ($RESPONSE_CODE)${RES}"
+	    exit 1
+    fi
+done
+
+# # # # # # # # #
+# GETTER for uploaded files (should be 4 files)
+# # # # # # # # #
+COUNT_FILES=$(echo $(curl -s --location --request GET $URL/file | grep -o 'id' | wc -l))
+if [[ $COUNT_FILES == 4 ]]; then
+    echo -e "${GRE}GET file successful (GOT $COUNT_FILES)${RES}"
+else
+    echo -e "${RED}GET file failed (GOT $COUNT_FILES)${RES}"
+    echo $(curl -s --location --request GET $URL/file)
+    exit 1
+fi
+
+# # # # # # # # #
+# get uuid of uploaded files and match to corresponding script id
+# # # # # # # # #
+for i in "${!ID_SCRIPTS[@]}"
+do
+    declare ID_${ID_SCRIPTS[$i]^^}=$(curl -s --request GET $URL/file | jq '.[] | select(.script=="'${ID_SCRIPTS[$i]}'") | .id' | cut -d "\"" -f 2)
+done
+UUID_SCRIPTS=( $ID_ERROR $ID_EXIT $ID_SLEEP $ID_SUCCESS )
+
+# # # # # # # # #
+# start file verification of each file
+# # # # # # # # #
+for i in "${!ID_SCRIPTS[@]}"
+do
+    RESPONSE_CODE=$(curl -s -o /dev/null -w '%{http_code}' --location --request POST $URL/script/${UUID_SCRIPTS[$i]}/verify --header 'Authorization: Bearer '$BEARER_TOKEN'')
+    if [[ $RESPONSE_CODE == 204 ]]; then
+	    echo -e "${GRE}VERIFY of FILE_$i successful ($RESPONSE_CODE)${RES}"
+    else
+	    echo -e "${RED}VERIFY of FILE_$i failed ($RESPONSE_CODE)${RES}"
+	    exit 1
+    fi
+done
+
+# # # # # # # # #
+# wait till all scripts are finished
+# # # # # # # # #
+echo "wait 30s"
+sleep 30s
+
+# # # # # # # # #
+# check script processing and state
+# # # # # # # # #
+for i in "${!ID_SCRIPTS[@]}"
+do
+    OPERATION=$(grep '^operation=' /var/lib/aktin/import/${UUID_SCRIPTS[$i]}/properties | cut -d'=' -f2)
+    if [[ $OPERATION == 'verifying' ]]; then
+        echo -e "${GRE}${UUID_SCRIPTS[$i]} successfully changed operation to verifying${RES}"
+    else
+        echo -e "${RED}${UUID_SCRIPTS[$i]} has operation $OPERATION (should be verifying)${RES}"
+	    exit 1
+    fi
+
+    STATE=$(grep '^state=' /var/lib/aktin/import/${UUID_SCRIPTS[$i]}/properties | cut -d'=' -f2)
+    case "${ID_SCRIPTS[$i]}" in
+    'error' | 'exit')
+        if [[ $STATE == 'failed' ]]; then
+            echo -e "${GRE}${UUID_SCRIPTS[$i]} successfully changed state to failed${RES}"
+        else
+            echo -e "${RED}${UUID_SCRIPTS[$i]} has state $STATE (should be failed)${RES}"
+	        exit 1
+        fi
+        ;;
+    'sleep')
+        if [[ $STATE == 'timeout' ]]; then
+            echo -e "${GRE}${UUID_SCRIPTS[$i]} successfully changed state to timeout${RES}"
+        else
+            echo -e "${RED}${UUID_SCRIPTS[$i]} has state $STATE (should be timeout)${RES}"
+	        exit 1
+        fi
+        ;;
+    'success')
+        if [[ $STATE == 'successful' ]]; then
+            echo -e "${GRE}${UUID_SCRIPTS[$i]} successfully changed state to successful${RES}"
+        else
+            echo -e "${RED}${UUID_SCRIPTS[$i]} has state $STATE (should be successful)${RES}"
+	        exit 1
+        fi
+        ;;
+    esac
+done
+
+# # # # # # # # #
+# check created logs during script processing via endpoint
+# # # # # # # # #
+PATH_LOG=/var/lib/aktin/import
+for i in "${!ID_SCRIPTS[@]}"
+do
+    if [[ -f $PATH_LOG/${UUID_SCRIPTS[$i]}/stdOutput && -f $PATH_LOG/${UUID_SCRIPTS[$i]}/stdError ]]; then
+        echo -e "${GRE}Script logs for ${UUID_SCRIPTS[$i]} found${RES}"
+    else
+        echo -e "${RED}No script logs for ${UUID_SCRIPTS[$i]} found${RES}"
+    fi
+
+    LOG_ERROR=$(curl -s --request GET $URL/file/${UUID_SCRIPTS[$i]}/log | jq '.[] | select(.type=="stdError") | .text' | cut -d "\"" -f 2)
+    LOG_OUTPUT=$(curl -s --request GET $URL/file/${UUID_SCRIPTS[$i]}/log | jq '.[] | select(.type=="stdOutput") | .text' | cut -d "\"" -f 2)
+
+    case "${ID_SCRIPTS[$i]}" in
+    'error' | 'exit')
+        if [[ ! -z $LOG_ERROR && -z $LOG_OUTPUT ]]; then
+            echo -e "${GRE}${UUID_SCRIPTS[$i]} has an error log and an empty output log${RES}"
+        else
+            echo -e "${RED}Something is wrong with the logs of ${UUID_SCRIPTS[$i]}${RES}"
+	        exit 1
+        fi
+        ;;
+    'sleep')
+        if [[ -z $LOG_ERROR && -z $LOG_OUTPUT ]]; then
+            echo -e "${GRE}${UUID_SCRIPTS[$i]} has empty logs${RES}"
+        else
+            echo -e "${RED}Something is wrong with the logs of ${UUID_SCRIPTS[$i]}${RES}"
+	        exit 1
+        fi
+        ;;
+    'success')
+        if [[ -z $LOG_ERROR && ! -z $LOG_OUTPUT ]]; then
+            echo -e "${GRE}${UUID_SCRIPTS[$i]} has an output log and an empty error log${RES}"
+        else
+            echo -e "${RED}Something is wrong with the logs of ${UUID_SCRIPTS[$i]}${RES}"
+	        exit 1
+        fi
+        ;;
+    esac
+done
+
+# # # # # # # # #
+# check cancelling of file processing
+# # # # # # # # #
+if [[ $(curl -s --request GET $URL/script/queue) == 0 ]]; then
+    echo -e "${GRE}Queue is currently empty${RES}"
+else
+    echo -e "${YEL}Queue is not empty${RES}"
+fi
+
+RESPONSE_CODE=$(curl -s -o /dev/null -w '%{http_code}' --location --request POST $URL/script/$ID_SLEEP/verify --header 'Authorization: Bearer '$BEARER_TOKEN'')
+if [[ $RESPONSE_CODE == 204 ]]; then
+    echo -e "${GRE}VERIFY of FILE_$i successful ($RESPONSE_CODE)${RES}"
+    sleep 2s
+else
+    echo -e "${RED}VERIFY of FILE_$i failed ($RESPONSE_CODE)${RES}"
+    exit 1
+fi
+
+OPERATION=$(grep '^operation=' /var/lib/aktin/import/$ID_SLEEP/properties | cut -d'=' -f2)
+if [[ $OPERATION == 'verifying' ]]; then
+    echo -e "${GRE}$ID_SLEEP successfully changed operation to verifying${RES}"
+else
+    echo -e "${YEL}$ID_SLEEP has operation $OPERATION (should be verifying)${RES}"
+fi
+
+STATE=$(grep '^state=' /var/lib/aktin/import/$ID_SLEEP/properties | cut -d'=' -f2)
+if [[ $STATE == 'in_progress' ]]; then
+    echo -e "${GRE}$ID_SLEEP successfully changed state to in_progress${RES}"
+else
+    echo -e "${YEL}$ID_SLEEP has state $STATE (should be in_progress)${RES}"
+fi
+
+RESPONSE_CODE=$(curl -s -o /dev/null -w '%{http_code}' --location --request POST $URL/script/$ID_SLEEP/cancel --header 'Authorization: Bearer '$BEARER_TOKEN'')
+if [[ $RESPONSE_CODE == 204 ]]; then
+    echo -e "${GRE}CANCEL of FILE_$i successful ($RESPONSE_CODE)${RES}"
+else
+    echo -e "${RED}CANCEL of FILE_$i failed ($RESPONSE_CODE)${RES}"
+    exit 1
+fi
+
+STATE=$(grep '^state=' /var/lib/aktin/import/$ID_SLEEP/properties | cut -d'=' -f2)
+if [[ $STATE == 'cancelled' ]]; then
+    echo -e "${GRE}$ID_SLEEP successfully changed state to cancelled${RES}"
+else
+    echo -e "${YEL}$ID_SLEEP has state $STATE (should be cancelled)${RES}"
+fi
+
+if [[ $(curl -s --request GET $URL/script/queue) == 0 ]]; then
+    echo -e "${GRE}Queue is currently empty${RES}"
+else
+    echo -e "${RED}Queue is not empty${RES}"
+    exit 1
+fi
+
+# # # # # # # # #
+# start file delete of all uploaded files
+# # # # # # # # #
+for i in "${!ID_SCRIPTS[@]}"
+do
+    RESPONSE_CODE=$(curl -s -o /dev/null -w '%{http_code}' --location --request DELETE $URL/file/${UUID_SCRIPTS[$i]} --header 'Authorization: Bearer '$BEARER_TOKEN'')
+    if [[ $RESPONSE_CODE == 204 ]]; then
+	    echo -e "${GRE}DELETE of FILE_$i successful ($RESPONSE_CODE)${RES}"
+    else
+	    echo -e "${RED}DELETE of FILE_$i failed ($RESPONSE_CODE)${RES}"
+	    exit 1
+    fi
+done
+
+# # # # # # # # #
+# GETTER for uploaded files
+# # # # # # # # #
+COUNT_FILES=$(echo $(curl -s --location --request GET $URL/file | grep -o 'id' | wc -l))
+if [[ $COUNT_FILES < 5 ]]; then
+    echo -e "${GRE}GET file successful (GOT $COUNT_FILES)${RES}"
+else
+    echo -e "${RED}GET file failed (GOT $COUNT_FILES)${RES}"
+    echo $(curl -s --location --request GET $URL/file)
+    exit 1
+fi
+
+# # # # # # # # #
+# check for empty aktin/import folder
+# # # # # # # # #
+if [ -z $(ls -A /var/lib/aktin/import) ]; then
+    echo -e "${GRE}/var/lib/aktin/import is emtpy${RES}"
+else
+    echo -e "${RED}/var/lib/aktin/import is not emtpy${RES}"
+    exit 1
+fi

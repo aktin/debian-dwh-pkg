@@ -1,0 +1,38 @@
+#! /bin/bash
+
+set -euo pipefail
+
+readonly RES='\e[0m'
+readonly RED='\e[0;31m'
+readonly GRE='\e[0;32m'
+readonly YEL='\e[0;33m'
+readonly BRED='\e[1;31m'
+readonly BGRE='\e[1;32m'
+readonly BYEL='\e[1;33m'
+
+# destination url for plain testing
+URL="http://localhost:80/aktin/admin/rest/test/"
+
+# loop over modules broker, email an R
+MODULE=( "broker/status" "email/send" "r/run" )
+for i in "${MODULE[@]}"
+do
+	# broker is get request, other modules are post requests
+	if [[ $i == "broker/status" ]]; then
+		RESPONSE_CODE=$(curl -o /dev/null -w "%{http_code}" -s --request GET $URL$i)
+	else
+		RESPONSE_CODE=$(curl -o /dev/null -w "%{http_code}" -s --request POST $URL$i)
+	fi
+
+	# check response for code 200, print whole response on failure (via new request)
+	if [[ $RESPONSE_CODE == 200 ]]; then
+		echo -e "${GRE}Test $i successful ($RESPONSE_CODE)${RES}"
+	else
+		echo -e "${RED}Test $i ($RESPONSE_CODE)${RES}"
+		if [[ $i == "broker/status" ]]; then
+			echo $(curl -s --request GET $URL$i)
+		else
+			echo $(curl -s --request POST $URL$i)
+		fi
+	fi
+done
