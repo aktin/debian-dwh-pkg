@@ -69,13 +69,6 @@ function move_datasource_for_postinstall() {
 	cp -r "${DRESOURCES}/datasource" "${DBUILD}${DDSPOSTINSTALL}"
 }
 
-function move_standalone_patch_for_postinstall() {
-	DWILDFLYPOSTINSTALL="$1"
-
-	mkdir -p "$(dirname "${DBUILD}${DWILDFLYPOSTINSTALL}")"
-	cp "${DRESOURCES}/standalone.xml.patch" "${DBUILD}${DDSPOSTINSTALL}"
-}
-
 function build_linux() {
 	download_dwh_j2ee "/opt/wildfly/standalone/deployments"
 	config_apache2_proxy "/etc/apache2/conf-available" "localhost"
@@ -86,5 +79,4 @@ function build_linux() {
 	move_database_for_postinstall "/usr/share/${PACKAGE}/database"
 	move_database_update_for_postinstall "/usr/share/${PACKAGE}/database-update"
 	move_datasource_for_postinstall "/usr/share/${PACKAGE}/datasource"
-	move_standalone_patch_for_postinstall "usr/share/${PACKAGE}/wildfly"
 }
