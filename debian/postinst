@@ -77,6 +77,9 @@ do
 	eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f $sqlfile" >/dev/null
 done
 
+# patch standalone.xml
+patch -p1 -d "/opt/wildfly/standalone/configuration/standalone.xml" < "/usr/share/$DPKG_MAINTSCRIPT_PACKAGE/wildlfy/standalone.xml.patch"
+
 # deploy aktin datasource
 sed -e "s/__HOST__/$host/g" \
     -e "s/__PORT__/$port/g" \

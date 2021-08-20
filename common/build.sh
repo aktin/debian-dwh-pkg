@@ -28,12 +28,6 @@ function config_apache2_proxy() {
 	sed -e "s/__WILDFLYHOST__/${WILDFLYHOST}/g" "${DRESOURCES}/aktin-j2ee-reverse-proxy.conf" >"${DBUILD}${DAPACHE2CONF}/aktin-j2ee-reverse-proxy.conf"
 }
 
-function patch_wildfly_standalone() {
-	DWILDFLYHOME="$1"
-
-	patch -p1 -d "${DBUILD}${DWILDFLYHOME}" < "${DRESOURCES}/standalone.xml.patch"
-}
-
 function create_aktin_dir() {
 	DAKTINDIR="${1}"
 
@@ -75,9 +69,15 @@ function move_datasource_for_postinstall() {
 	cp -r "${DRESOURCES}/datasource" "${DBUILD}${DDSPOSTINSTALL}"
 }
 
+function move_standalone_patch_for_postinstall() {
+	DWILDFLYPOSTINSTALL="$1"
+
+	mkdir -p "$(dirname "${DBUILD}${DWILDFLYPOSTINSTALL}")"
+	cp "${DRESOURCES}/standalone.xml.patch" "${DBUILD}${DDSPOSTINSTALL}"
+}
+
 function build_linux() {
 	download_dwh_j2ee "/opt/wildfly/standalone/deployments"
-	patch_wildfly_standalone "/opt/wildfly"
 	config_apache2_proxy "/etc/apache2/conf-available" "localhost"
 	create_aktin_dir "/var/lib/aktin"
 	create_aktin_dir "/var/lib/aktin/import"
@@ -86,4 +86,5 @@ function build_linux() {
 	move_database_for_postinstall "/usr/share/${PACKAGE}/database"
 	move_database_update_for_postinstall "/usr/share/${PACKAGE}/database-update"
 	move_datasource_for_postinstall "/usr/share/${PACKAGE}/datasource"
+	move_standalone_patch_for_postinstall "usr/share/${PACKAGE}/wildfly"
 }
