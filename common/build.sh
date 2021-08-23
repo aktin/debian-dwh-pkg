@@ -17,7 +17,9 @@ function download_dwh_j2ee() {
 	DWILDFLYDEPLOYMENTS="${1}"
 
 	mkdir -p "${DBUILD}${DWILDFLYDEPLOYMENTS}"
-	mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VDWH_J2EE}:ear" -Ddest="${DBUILD}${DWILDFLYDEPLOYMENTS}/"
+	mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VDWH_J2EE}:ear"
+	# dirty
+	cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${VDWH_J2EE}/dwh-j2ee-${VDWH_J2EE}.ear" "${DBUILD}${DWILDFLYDEPLOYMENTS}/dwh-j2ee-${VDWH_J2EE}.ear"
 }
 
 function config_apache2_proxy() {
