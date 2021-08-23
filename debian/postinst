@@ -83,5 +83,5 @@ sed -e "s/__HOST__/$host/g" \
     -e "s/__PORT__/$port/g" \
     /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/datasource/aktin-ds.xml > /opt/wildfly/standalone/deployments/aktin-ds.xml
 
-chown -R wildfly:wildfly /var/lib/aktin /opt/wildfly/standalone/deployments/aktin-ds.xml /opt/wildfly/standalone/deployments/dwh-j2ee-__DWH_J2EE_VERSION__.ear
+chown -R wildfly:wildfly /var/lib/aktin /opt/wildfly/standalone/deployments/aktin-ds.xml /opt/wildfly/standalone/deployments/dwh-j2ee-*.ear
 systemctl start wildfly.service
