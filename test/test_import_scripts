@@ -87,8 +87,8 @@ done
 # # # # # # # # #
 # wait till all scripts are finished
 # # # # # # # # #
-echo "wait 30s"
-sleep 30s
+echo "wait 45s"
+sleep 45s
 
 # # # # # # # # #
 # check script processing and state
