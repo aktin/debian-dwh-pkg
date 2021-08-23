@@ -34,35 +34,35 @@ function create_aktin_dir() {
 	mkdir -p "${DBUILD}${DAKTINDIR}"
 }
 
-function move_aktin_properties() {
+function copy_aktin_properties() {
 	DAKTINCONF="${1}"
 
 	mkdir -p "${DBUILD}${DAKTINCONF}"
 	cp "${DRESOURCES}/aktin.properties" "${DBUILD}${DAKTINCONF}/"
 }
 
-function move_aktin_importscripts() {
+function copy_aktin_importscripts() {
 	DAKTINIMPORTSCRIPTS="${1}"
 
 	mkdir -p "$(dirname "${DBUILD}${DAKTINIMPORTSCRIPTS}")"
 	cp -r "${DRESOURCES}/import-scripts" "${DBUILD}${DAKTINIMPORTSCRIPTS}"
 }
 
-function move_database_for_postinstall() {
+function copy_database_for_postinstall() {
 	DDBPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDBPOSTINSTALL}")"
 	cp -r "${DRESOURCES}/database" "${DBUILD}${DDBPOSTINSTALL}"
 }
 
-function move_database_update_for_postinstall() {
+function copy_database_update_for_postinstall() {
 	DDBUPDATEPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDBUPDATEPOSTINSTALL}")"
 	cp -r "${DRESOURCES}/database-update" "${DBUILD}${DDBUPDATEPOSTINSTALL}"
 }
 
-function move_datasource_for_postinstall() {
+function copy_datasource_for_postinstall() {
 	DDSPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDSPOSTINSTALL}")"

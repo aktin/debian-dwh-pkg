@@ -23,7 +23,7 @@ a2enconf aktin-j2ee-reverse-proxy >/dev/null || true
 echo "Restarting apache2 ..."
 systemctl restart apache2.service
 
-# try connecting to postgresql
+# select postgresql connection method
 PSQL=""
 db_get $DEBCONF_NAME/db_conn
 if [ "$RET" = "unix" ]; then
@@ -44,6 +44,7 @@ else
 	echo "Connecting to postgres via TCP/IP to $host:$port."
 fi
 
+# wait for postgresql connection
 WAITCOUNT=0
 while ! systemctl start postgresql.service 2>/dev/null; do
 	if [ $WAITCOUNT -lt 12 ]; then
