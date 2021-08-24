@@ -7,4 +7,3 @@ Depends: __DEPEND_I2B2__, r-base-core, r-cran-lattice, r-cran-xml, r-cran-tidyve
 Recommends: postgresql-12
 Maintainer: AKTIN IT <it-support@aktin.org>
 Description: AKTIN Datawarehouse in Notaufnahmen
-
