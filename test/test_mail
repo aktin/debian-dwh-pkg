@@ -37,4 +37,3 @@ docker stop $GREENMAIL
 docker rm $GREENMAIL
 
 echo -e "${BGRE}$( basename "${BASH_SOURCE[0]}" ) succeeded!${RES}"
-
