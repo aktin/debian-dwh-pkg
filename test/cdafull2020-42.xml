@@ -1,0 +1,1185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    AKTIN-Projekt
+
+    Beispiel Storyboard 1: Einfache Distorsionsverletzung, unfallchirurgisch
+    Storyboard aktin-1
+    2015-04-09 KHeitmann
+
+    Timo Kicker, geboren am 31.05.1996 in Dankbor, wohnhaft München, stellt sich am 17. Januar 2015 um 16:03 Uhr
+    in der Notaufnahme des Krankenhauses selbst vor. Er hat beim Training des Fußballvereins mit dem linken Fuß
+    ein Distorsionstrauma erlitten und wird von seinem Vereinskollegen humpelnd in die Notaufnahme gebracht.
+    In der Notaufnahme wird kein Ersteinschätzungssystem eingesetzt. Als Leitsymptom wird die Verletzung der
+    unteren Extremität mit CEDIS-Code 557 erhoben.
+
+    Die vom Unfallchirurgen um 16:32 Uhr erhobene Anamnese ergibt keine weiteren Vorerkrankungen, keine Allergien
+    und keine regelmäßigen Medikamenteneinnahmen. Es werden in Anbetracht der Verletzungsschwere keine Vitalparameter
+    wie Atemfrequenz, Herzfrequenz oder Blutdruck erhoben. An Diagnostik wird eine Röntgenuntersuchung des
+    Sprunggelenks durchgeführt um 16:50 Uhr durchgeführt. Nach erfolgtem Ausschluss einer Fraktur wird um
+    17:14 als Therapie eine Sprunggelenkorthese angelegt und der Patient um 17:35 in die hausärztliche Versorgung
+    entlassen. Als Entlassungsdiagnose wird die S93.6 „Distorsion unteres Sprunggelenk“ gestellt.
+
+    ERGÄNZUNG:
+    Datensatz aufgefüllt mit unrealistischen Testdaten; vollständiger Basis-Modul-Datensatz
+    Reihenfolge z.T. gerändert, so dass die Elemente in der Reihenfolge aufreten wie sie im Template beschrieben sind
+
+    Anpassung auf Release 1.18 (Umstellung auf Template ID 1.2.276.0.76.10.1019)
+
+-->
+<?xml-model href="../../../../../src/main/resources/schematron/aktin-basism20152b.sch" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<ClinicalDocument xmlns="urn:hl7-org:v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdtc="urn:hl7-org:sdtc" xsi:schemaLocation="urn:hl7-org:v3 ../../../../../cda_basismodul/CDA.xsd">
+    <!--
+        CDA Header
+    -->
+    <!-- Realmcode (fix) -->
+    <realmCode code="DE"/>
+    <!-- Type Id (fix) -->
+    <typeId root="2.16.840.1.113883.1.3" extension="POCD_HD000040"/>
+    <!-- Template Id (fix) -->
+    <templateId root="1.2.276.0.76.10.1019"/>
+    <!-- Identifikation des Dokuments -->
+    <id root="1.2.276.0.76.4.17.9814184919" extension="14025fda-3f25-4c64-8883-4f7e6cabc0b6"/>
+    <!-- Fixer Dokumententype-Code -->
+    <code code="68552-9" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Emergency medicine Note"/>
+    <title>CDATitle</title>
+    <!-- Datum und Zeit der Erstellung -->
+    <effectiveTime value="20200728163300"/>
+    <!-- Vertraulichkeitsstufe -->
+    <confidentialityCode code="N" codeSystem="2.16.840.1.113883.5.25"/>
+    <!-- Sprache und Länderkennung -->
+    <languageCode code="de-DE"/>
+    <!-- Set-ID und Versionsnummer des Dokuments -->
+    <setId root="1.2.276.0.76.4.17.9814184919" extension="0ff0f2d6-ddc2-4300-a5e6-b0aecd1a7dcf"/>
+    <versionNumber value="1"/>
+
+    <!-- Patient -->
+    <recordTarget typeCode="RCT" contextControlCode="OP">
+        <patientRole classCode="PAT">
+            <!-- Identifikation -->
+            <id extension="1190250799" root="1.2.276.0.76.4.8"/>
+            <!-- Adresse -->
+           <addr use="WP">
+                <houseNumber>1050</houseNumber>
+                <direction>W</direction>
+                <streetName>Wishard Blvd</streetName>
+                <additionalLocator>RG 5th floor</additionalLocator>
+                <city>Indianapolis</city>
+                <state>IN</state>
+                <postalCode>46240</postalCode>
+            </addr>
+            <telecom use="H" value="tel:+43.1.40400"/>
+            <telecom use="MC" value="tel:+43.664.1234567"/>
+            <telecom value="mailto:herberthannes.mustermann@provider.de"/>
+            <patient classCode="PSN" determinerCode="INSTANCE">
+                <!-- Name -->
+                <name>
+                    <given>Timo</given>
+                    <family>Kicker</family>
+                </name>
+                <!-- Geschlecht -->
+                <administrativeGenderCode code="M" codeSystem="2.16.840.1.113883.5.1"/>
+                <!-- Geburtsdatum -->
+                <birthTime value="19960531"/>
+            </patient>
+        </patientRole>
+    </recordTarget>
+
+    <!-- Author -->
+    <author typeCode="AUT" contextControlCode="OP">
+        <time value="20200728160900"/>
+        <assignedAuthor classCode="ASSIGNED">
+            <id root="1.2.276.0.76.3.2.123456789"/>
+            <assignedPerson classCode="PSN" determinerCode="INSTANCE">
+                <name>
+                    <prefix>Dr. med. </prefix>
+                    <given>Martin</given>
+                    <family>Regensburger</family>
+                </name>
+            </assignedPerson>
+            <representedOrganization classCode="ORG" determinerCode="INSTANCE">
+                <id root="1.2.276.0.76.4.17" extension="9814184919"/>
+                <name>Städtisches Klinikum München GmbH</name>
+            </representedOrganization>
+        </assignedAuthor>
+    </author>
+        <author typeCode="AUT" contextControlCode="OP">
+        <time value="20190131145900"/>
+        <assignedAuthor classCode="ASSIGNED">
+            <id root="1.2.276.0.76.3.2.234567891"/>
+            <assignedPerson classCode="PSN" determinerCode="INSTANCE">
+                <name>
+                    <given>Max</given>
+                    <family>Mustermann</family>
+                </name>
+            </assignedPerson>
+            <representedOrganization classCode="ORG" determinerCode="INSTANCE">
+                <id root="1.2.276.0.76.4.17" extension="9814184919"/>
+                <id root="1.2.276.0.76.4.17" extension="9814184920"/>
+                <name>Städtisches Klinikum München GmbH</name>
+                <telecom use="H" value="tel:+43.1.40400"/>
+                <telecom use="MC" value="tel:+43.664.1234567"/>
+                <addr use="WP">
+                    <streetName>Wishard Blvd</streetName>
+                    <city>Indianapolis</city>
+                    <postalCode>46240</postalCode>
+                </addr>
+            </representedOrganization>
+        </assignedAuthor>
+    </author>
+
+    <!-- Verwaltungsorganisation des Dokuments -->
+    <custodian>
+        <assignedCustodian>
+            <representedCustodianOrganization>
+                <id root="1.2.276.0.76.4.17" extension="9814184919"/>
+                <id root="1.2.276.0.76.4.17" extension="9814184920"/>
+                <name>Städtisches Klinikum München GmbH</name>
+                <telecom use="H" value="tel:+43.1.40400"/>
+                <addr use="WP">
+                    <streetName>Wishard Blvd</streetName>
+                    <city>Indianapolis</city>
+                    <postalCode>46240</postalCode>
+                </addr>
+            </representedCustodianOrganization>
+        </assignedCustodian>
+    </custodian>
+
+    <informationRecipient typeCode="PRCP">
+        <intendedRecipient>
+            <id extension="4736437" root="2.16.840.1.113883.3.933"/>
+            <informationRecipient>
+                <name>
+                    <prefix>Dr.med.</prefix>
+                    <given>Kai</given>
+                    <family>Heitmann</family>
+                </name>
+            </informationRecipient>
+            <receivedOrganization>
+                <name>Heitmann CS</name>
+                <telecom use="WP" value="fax:0247365746"/>
+                <addr>
+                    <streetAddressLine>Mühlenweg 1a</streetAddressLine>
+                    <houseNumber>1a</houseNumber>
+                    <postalCode>52152</postalCode>
+                    <city>Simmerath</city>
+                </addr>
+            </receivedOrganization>
+        </intendedRecipient>
+    </informationRecipient>
+
+    <participant typeCode="HLD">
+        <templateId root="1.2.276.0.76.10.2022"/>
+        <time>
+            <high value="20131231"/>  <!-- Hier muss immer ein Quartalsende angegeben (MM/JJ) => YYYYMMDD. -->
+        </time>
+        <associatedEntity classCode="POLHOLD">
+            <!-- eGK Nummer -->
+            <id extension="A123456789" root="1.2.276.0.76.4.8"/>
+            <!-- Versicherungsnummer -->
+            <id extension="123456789" root="1.2.276.0.76.3.1.131.1.4.3.9999.9999.999955"/>
+            <associatedPerson>
+                <name>
+                    <given>Fred</given>
+                    <family>Mustermann</family>
+                </name>
+            </associatedPerson>
+            <scopingOrganization>
+                <!-- IK-NR -->
+                <id extension="987654321" root="1.2.276.0.76.4.5"/>
+                <!-- VK-NR -->
+                <id extension="54321" root="1.2.276.0.76.4.7"/>
+                <name>AOK Süd-Ostwestfalen Nord</name>
+            </scopingOrganization>
+        </associatedEntity>
+    </participant>
+
+
+    <!-- Aufnahme -->
+    <documentationOf typeCode="DOC">
+        <serviceEvent classCode="ACT" moodCode="EVN">
+            <!-- Behandlung -->
+            <effectiveTime>
+                <!-- Zeitpunkt Therapiebeginn (Datum und Zeit), Zeitangabe genau bis auf die Minute -->
+                <low value="20200728160300"/>
+                <!-- Zeitpunkt Therapieende, Verlegungs-/ (Datum und Zeit), Zeitangabe genau bis auf die Minute; muss, wenn angegeben, hier identisch sein mit encompassingEncounter.effectiveTime.high -->
+                <high value="20200728173500"/>
+            </effectiveTime>
+            <performer typeCode="PRF">
+                <!-- Erster Arzt, Arztkontakt Beginn und Ende -->
+                <time>
+                    <!-- Begin des Arztkontaktes -->
+                    <low value="202007281632"/>
+                    <!-- Ende des Arztkontaktes -->
+                    <high value="202007281714"/>
+                </time>
+                <assignedEntity classCode="ASSIGNED">
+                    <id nullFlavor="NA"/>
+                </assignedEntity>
+            </performer>
+        </serviceEvent>
+    </documentationOf>
+
+
+    <!-- Patientenkontakt -->
+    <componentOf>
+        <encompassingEncounter classCode="ENC" moodCode="EVN">
+            <!-- Encounter-ID (Patientenkontakt in der Notaufnahme) -->
+            <id root="1.2.276.0.76.3.87686" extension="1190250799"/>
+            <!-- Krankenhausinternes Fallkennzeichen (optional) -->
+            <id root="1.2.276.0.76.3.87686.1.45" extension="1190250799"/>
+            <effectiveTime>
+                <!-- Aufnahmezeitpunkt (Datum und Zeit), Zeitangabe genau bis auf die Minute -->
+                <low value="202007281603"/>
+                <!-- Ende Patientenkontakt = Zeitpunkt der Verlegung/Entlassung, hier auch als Deceased-Date wg, Disposition-Code=1 -->
+                <high value="202007281735"/>
+            </effectiveTime>
+            <!-- Entlassung des Patienten mit Entlassungsgrund -->
+            <!--<dischargeDispositionCode code="2" codeSystem="1.2.276.0.76.3.1.195.5.56"/> -->
+        </encompassingEncounter>
+    </componentOf>
+
+
+    <!--
+        CDA Body
+    -->
+    <component>
+        <structuredBody>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <!-- Transportmittel -->
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3045"/>
+                    <code code="11459-5" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Transport mode"/>
+                    <title>Transportmittel</title>
+                    <text>Ohne</text>
+                    <entry typeCode="COMP">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4037"/>
+                            <id root="45f99818-637b-4be7-bc22-a70442424242"/>
+                            <code code="11459-5" codeSystem="2.16.840.1.113883.6.1" displayName="Transport method"/>
+                            <text>
+                                <reference value="#transp"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <!-- Optional: Ankunftszeit -->
+                            <effectiveTime>
+                                <high value="202007281603"/>
+                            </effectiveTime>
+                            <value xsi:type="CV" nullFlavor="NA"/>
+                        </observation>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3046"/>
+                    <code code="11293-8" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Type of Referral source"/>
+                    <title>Zuweisung</title>
+                    <text>Rettungsdienst</text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <act classCode="PCPR" moodCode="RQO">
+                            <templateId root="1.2.276.0.76.10.4038"/>
+                            <code code="11293-8" codeSystem="2.16.840.1.113883.6.1" displayName="Type of Referral source"/>
+                            <text>
+                                <reference value="#referral"/>
+                            </text>
+                            <participant typeCode="AUT">
+                                <participantRole classCode="AGNT">
+                                    <code code="VAP" codeSystem="1.2.276.0.76.5.440" displayName="Vertragsarzt/Praxis"/>
+                                </participantRole>
+                            </participant>
+                         </act>
+                    </entry>
+                 </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <!-- Notfallanamnese -->
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3053"/>
+                    <code code="10164-2" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="History of present illness"/>
+                    <title>Notfallanamnese</title>
+                    <text>Pat hat beim Training des Fußballvereins mit dem linken Fuß ein Distorsionstrauma erlitten und wurde von seinem Vereinskollegen humpelnd in die Notaufnahme gebracht. Als Leitsymptom wird die Verletzung der unteren Extremität mit CEDIS-Code 557 erhoben. Anamnese ergibt keine weiteren Vorerkrankungen, keine Allergien und keine regelmäßigen Medikamenteneinnahmen. Vitalparameter nicht erhoben</text>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <!-- Beschwerden bei Vorstellung -->
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3048"/>
+                    <code code="46239-0" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Chief complaint+Reason for visit"/>
+                    <title>Beschwerden bei Vorstellung</title>
+                    <text>
+                        <content ID="compl-1">Distorsionstrauma linker Fuß</content>
+                    </text>
+                    <entry typeCode="COMP">
+                        <act classCode="ACT" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4039"/>
+                            <id root="1.2.276.0.76.4.17.9814184919" extension="b2e0e192-416a-4e9c-97ce-2f3e279826e9"/>
+                            <code code="CONC" codeSystem="2.16.840.1.113883.5.6" displayName="Concern"/>
+                            <statusCode code="active"/>
+                            <effectiveTime>
+                                <low value="20200728"/>
+                                <high value="202007281554"/>
+                            </effectiveTime>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4040"/>
+                                    <id root="1.2.276.0.76.4.17.9814184919" extension="08edb7c0-2111-43f2-a784-9a5fdfaa67f0"/>
+                                    <code code="75322-8" codeSystem="2.16.840.1.113883.6.1" displayName="Complaint"/>
+                                    <text>
+                                        <reference value="#compl-1"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <width value="1" unit="h"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CE" code="103" codeSystem="1.2.276.0.76.5.439" displayName="Aua Lower extremity injury">
+                                        <originalText>Verletzung der unteren Extremität</originalText>
+                                    </value>
+                                </observation>
+                            </entryRelationship>
+                        </act>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3047"/>
+                    <code code="55752-0" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Clinical information"/>
+                    <title>Klinische Basisinformationen</title>
+                    <text>
+                        <list>
+                            <item>Schwanger: nein</item>
+                            <item>Tetanusschutz: ja</item>
+                            <item>Rankin Skala Score: 1</item>
+                        </list>
+                    </text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4043"/>
+                            <id root="b2e0e192-416a-4e9c-97ce-2f3e27424242"/>
+                            <code code="11449-6" codeSystem="2.16.840.1.113883.6.1" displayName="Pregnancy status"/>
+                            <text>
+                                <reference value="#Preg"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="202007281545"/>
+                            <value xsi:type="CV" code="0" codeSystem="1.2.276.0.76.3.1.195.5.46" displayName="Patient nicht schwanger"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <substanceAdministration classCode="SBADM" moodCode="EVN" negationInd="false"> <!-- Tetanusschutz vorhanden (seit dem Jahr 2014) -->
+                            <templateId root="1.2.276.0.76.10.4044"/>
+                            <id root="b2e0e192-416a-4e9c-97ce-2f3e27424243"/>
+                            <code code="IMMUNIZ" codeSystem="2.16.840.1.113883.5.4" displayName="Immunization"/>
+                            <text>
+                                <reference value="#immun1"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="2014"/>
+                            <consumable>
+                                <manufacturedProduct classCode="MANU">
+                                    <manufacturedMaterial classCode="MMAT" determinerCode="KIND">
+                                        <code code="CTVACC" codeSystem="1.2.276.0.76.3.1.195.5.3" displayName="Tetanus vaccine (product)"/>
+                                    </manufacturedMaterial>
+                                </manufacturedProduct>
+                            </consumable>
+                        </substanceAdministration>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                    	<observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4045"/>
+                            <id root="10c1eb7e-dc2d-4d1f-806a-2ad65eba0396"/>
+                            <code code="75859-9" codeSystem="2.16.840.1.113883.6.1" displayName="Modified rankin scale"/>
+                            <text>
+                                <reference value="#rankin"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="2" unit="{score}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+                        </observation>
+                     </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <act classCode="ACT" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4072"/>
+                            <id root="1.2.276.0.76.4.17.9814184919" extension="dd8a6ff8-ed4b-4f7e-82c3-e98e58b45de6"/>
+                            <code code="CONC" codeSystem="2.16.840.1.113883.5.6" displayName="Concern"/>
+                            <statusCode code="completed"/>
+                            <effectiveTime>
+                                <low value="20190304"/>
+                            </effectiveTime>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4073"/>
+                                    <id root="1.2.276.0.76.4.17.9814184919" extension="3564b7c0-2111-43f2-a784-9a5fdfaa67f2"/>
+                                     <code code="COND" codeSystem="2.16.840.1.113883.5.4" displayName="Condition"/>
+                                    <text>
+                                        <reference value="#mdro-1"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="20190304"/>
+                                    </effectiveTime>
+                                     <value xsi:type="CD" code="MRSA" codeSystem="1.2.276.0.76.5.441" displayName="MRSA"/>
+                                  </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4073"/>
+                                    <id root="1.2.276.0.76.4.17.9814184919" extension="3564b7c0-2111-43f2-a784-9a5fdfaa67f2"/>
+                                    <code code="COND" codeSystem="2.16.840.1.113883.5.4" displayName="Condition"/>
+                                    <text>
+                                        <reference value="#mdro-2"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="20190304"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CD" code="4MRGN" codeSystem="1.2.276.0.76.5.441" displayName="gramnegative Stäbchen, die gegen alle vier Gruppen resistent sind">
+                                        <qualifier>
+                                            <name code="FSTAT" codeSystem="1.2.276.0.76.3.1.195.5.72" displayName="Befundstatus"/>
+                                            <value code="SUSP" codeSystem="1.2.276.0.76.3.1.195.5.73" displayName="Verdacht"/>
+                                        </qualifier>
+                                    </value>
+                                </observation>
+                            </entryRelationship>
+                        </act>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <!-- VitalSigns -->
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3044"/>
+                    <code code="8716-3" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Vital signs"/>
+                    <title>Vitalparameter</title>
+                    <text>Vital signs</text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4030"/>
+                            <id root="10c1eb7e-dc2d-4d1f-806a-2ad65eba0396"/>
+                            <code code="9279-1" codeSystem="2.16.840.1.113883.6.1" displayName="Respiratory Rate">
+                                <originalText>
+                                RR 17/Min
+                                </originalText>
+                            </code>
+                            <text>
+                                <reference value="#resp"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="17" unit="/min"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4031"/>
+                            <id root="769eb111-93b0-4c84-8e55-98f2098b7950"/>
+                            <code code="20564-1" codeSystem="2.16.840.1.113883.6.1" displayName="Oxygen saturation"/>
+                            <text>
+                                <reference value="#oxy"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="86.0" unit="%"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4032"/>
+                            <id root="adeb672e-a620-4aa4-9117-bdd8b2505a78"/>
+                            <code code="8480-6" codeSystem="2.16.840.1.113883.6.1" displayName="Systolic blood pressure"/>
+                            <text>
+                                <reference value="#SysBP"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="129" unit="mm[Hg]"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                    	<observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4033"/>
+                            <id root="bbfb672e-a620-4aa4-9117-bdd8b2505aaa"/>
+                            <code code="8867-4" codeSystem="2.16.840.1.113883.6.1" displayName="Heart Rate"/>
+                            <text>
+                                <reference value="#HeartR"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="67" unit="/min"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4034"/>
+                            <id root="98c1eb7e-dc2d-4d1f-806a-2ad65eba0351"/>
+                            <code code="9269-2" codeSystem="2.16.840.1.113883.6.1" displayName="Glasgow coma score total"/>
+                            <text>
+                                <reference value="#GlasgowCS"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="9" unit="{score}"/>
+                            <entryRelationship typeCode="COMP" contextConductionInd="true">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <code code="9267-6" codeSystem="2.16.840.1.113883.6.1" displayName="Glasgow coma score eye opening"/>
+                                    <statusCode code="completed"/>
+                                    <value xsi:type="PQ" value="4" unit="{score}"/>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="COMP" contextConductionInd="true">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <code code="9270-0" codeSystem="2.16.840.1.113883.6.1" displayName="Glasgow coma score verbal"/>
+                                    <statusCode code="completed"/>
+                                    <value xsi:type="PQ" value="3" unit="{score}"/>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="COMP" contextConductionInd="true">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <code code="9268-4" codeSystem="2.16.840.1.113883.6.1" displayName="Glasgow coma score motor"/>
+                                    <statusCode code="completed"/>
+                                    <value xsi:type="PQ" value="2" unit="{score}"/>
+                                </observation>
+                            </entryRelationship>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4046"/>
+                            <id root="deee672e-a620-4aa4-9117-bdd8b2505aaf"/>
+                            <code code="SPPL" codeSystem="1.2.276.0.76.3.1.195.5.1" displayName="Pupillenweite"/>
+                            <text>
+                                <reference value="#PupilLeft"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CV" code="M" codeSystem="1.2.276.0.76.3.1.195.5.49" displayName="mittel"/>
+                            <targetSiteCode code="L" codeSystem="1.2.276.0.76.3.1.195.5.48" displayName="Auge links"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4047"/>
+                            <id root="deee672e-a620-4aa4-9117-bdd8b2505aaf"/>
+                            <code code="RPPL" codeSystem="1.2.276.0.76.3.1.195.5.1" displayName="Pupillenreaktion"/>
+                            <text>
+                                <reference value="PupilLeft"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CV" code="B" codeSystem="1.2.276.0.76.3.1.195.5.50" displayName="prompt"/>
+                            <targetSiteCode code="L" codeSystem="1.2.276.0.76.3.1.195.5.48" displayName="Auge links"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4047"/>
+                            <id root="deee672e-a620-4aa4-9117-bdd8b2505aaf"/>
+                            <code code="RPPL" codeSystem="1.2.276.0.76.3.1.195.5.1" displayName="Pupillenreaktion"/>
+                            <text>
+                                <reference value="PupilRight"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CV" code="B" codeSystem="1.2.276.0.76.3.1.195.5.50" displayName="prompt"/>
+                            <targetSiteCode code="R" codeSystem="1.2.276.0.76.3.1.195.5.48" displayName="Auge rechts"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4035"/>
+                            <id root="af1eb111-93b0-4c84-8e55-98f2098b7950"/>
+                            <code code="8329-5" codeSystem="2.16.840.1.113883.6.1" displayName="Body temperature - Core"/>
+                            <text>
+                                <reference value="#BodyTemp"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="37.0" unit="Cel"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4036"/>
+                            <id root="10c1eb7e-dc2d-4d1f-806a-2ad65eba0396"/>
+                            <code code="72514-3" codeSystem="2.16.840.1.113883.6.1" displayName="Pain severity - 0-10 verbal numeric rating"/>
+                            <text>
+                                <reference value="#Pain"/>
+                            </text>
+                            <!-- 56840-2" Pain severity verbal numeric scale -->
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="PQ" value="2" unit="{score}"/>
+                        </observation>
+                     </entry>
+                </section>
+            </component>
+
+             <component typeCode="COMP" contextConductionInd="true">
+                <!-- Diagnostik -->
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3050"/>
+                    <code code="30954-2" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Relevant diagnostic tests &amp;or laboratory data"/>
+                    <title>Diagnostik</title>
+                    <text>
+                        <list>
+                            <item ID="proc-4">Röntgenuntersuchung des Sprunggelenks: einfache Distorsionsverletzung</item>
+                        </list>
+                    </text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4050"/>
+                            <id root="944cd73e-4361-4fca-929b-9a404b063651"/>
+                            <code code="30745-4" codeSystem="2.16.840.1.113883.6.1" displayName="Chest X-ray"/>
+                            <text>
+                                <reference value="#proc-1"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="PB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="path. Befund"/>
+                            <participant typeCode="LOC">
+                                <participantRole classCode="SDLOC">
+                                    <code code="ER" codeSystem="2.16.840.1.113883.5.111" displayName="Notaufnahme"/>
+                                </participantRole>
+                            </participant>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4051"/>
+                            <id root="9527DF31-B54F-4504-A511-E8BB54B2539C"/>
+                            <code code="38008-9" codeSystem="2.16.840.1.113883.6.1" displayName="Spine Cervical and Thoracic and Lumbar X-ray"/>
+                            <text>
+                                <reference value="#proc-2"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" nullFlavor="UNK"/>
+                            <participant typeCode="LOC">
+                                <participantRole classCode="SDLOC">
+                                    <code code="ER" codeSystem="2.16.840.1.113883.5.111" displayName="Notaufnahme"/>
+                                </participantRole>
+                            </participant>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN" negationInd="true">
+                            <templateId root="1.2.276.0.76.10.4052"/>
+                            <id root="7152e2cb-b208-4833-a70b-7f8317e34ed6"/>
+                            <code code="28561-9" codeSystem="2.16.840.1.113883.6.1" displayName="Pelvis X-ray"/>
+                            <text>
+                                <reference value="#proc-3"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" nullFlavor="UNK"/>
+                            <participant typeCode="LOC">
+                                <participantRole classCode="SDLOC">
+                                    <code code="ER" codeSystem="2.16.840.1.113883.5.111" displayName="Notaufnahme"/>
+                                </participantRole>
+                            </participant>
+                        </observation>
+                    </entry>
+
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4054"/>
+                            <id root="a25ec093-7459-4073-a9ef-f4de308b92d5"/>
+                            <code code="43468-8" codeSystem="2.16.840.1.113883.6.1" displayName="Unspecified body region X-ray"/>
+                            <text>
+                                <reference value="#proc-5"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                            <participant typeCode="LOC">
+                                <participantRole classCode="SDLOC">
+                                    <code code="ER" codeSystem="2.16.840.1.113883.5.111" displayName="Notaufnahme"/>
+                                </participantRole>
+                            </participant>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4055"/>
+                            <id root="2c2f8f44-1b89-4071-851b-45a6ccd0a1e1"/>
+                            <code code="24725-4" codeSystem="2.16.840.1.113883.6.1" displayName="Head CT"/>
+                            <text>
+                                <reference value="#proc-6"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                            <participant typeCode="LOC">
+                                <participantRole classCode="SDLOC">
+                                    <code code="ER" codeSystem="2.16.840.1.113883.5.111" displayName="Notaufnahme"/>
+                                </participantRole>
+                            </participant>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4056"/>
+                            <id root="cde348dd-f5d2-452a-b30f-ec33a92160b3"/>
+                            <code code="46305-9" codeSystem="2.16.840.1.113883.6.1" displayName="CT whole body"/>
+                            <text>
+                                <reference value="#proc-7"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                            <participant typeCode="LOC">
+                                <participantRole classCode="SDLOC">
+                                    <code code="ER" codeSystem="2.16.840.1.113883.5.111" displayName="Notaufnahme"/>
+                                </participantRole>
+                            </participant>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4057"/>
+                            <id root="6e1eb17e-e064-4996-b7f1-bcfaf55b06ac"/>
+                            <code code="26436-6" codeSystem="2.16.840.1.113883.6.1" displayName="Laboratory studies"/>
+                            <text>
+                                <reference value="#proc-8"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4058"/>
+                            <id root="59b54374-a939-49bf-be53-6af7d7ee3a2b"/>
+                            <code code="25056-3" codeSystem="2.16.840.1.113883.6.1" displayName="Unspecified body region MRI"/>
+                            <text>
+                                <reference value="#proc-9"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4059"/>
+                            <id root="285e1c44-5027-4b2b-b21c-e987b55567ee"/>
+                            <code code="18767-4" codeSystem="2.16.840.1.113883.6.1" displayName="Blood gas studies"/>
+                            <text>
+                                <reference value="#proc-10"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4060"/>
+                            <id root="2f851d0f-fe43-42e4-a16e-f1d5f818076f"/>
+                            <code code="50556-0" codeSystem="2.16.840.1.113883.6.1" displayName="Urinalysis dipstick panel"/>
+                            <text>
+                                <reference value="#proc-11"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4061"/>
+                            <id root="cddb56c3-bc8e-4e61-9eb1-4074bcd70c49"/>
+                            <code code="34534-8" codeSystem="2.16.840.1.113883.6.1" displayName="EKG 12 channel panel"/>
+                            <text>
+                                <reference value="#proc-12"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="201903261234"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4062"/>
+                            <id root="7cab4233-9d82-456d-81b4-c4a6c987d682"/>
+                            <code code="25061-3" codeSystem="2.16.840.1.113883.6.1" displayName="Unspecified body region US"/>
+                            <text>
+                                <reference value="#proc-13"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4063"/>
+                            <id root="0C3011ED-A709-4D85-A873-5150DC056934"/>
+                            <code code="25045-6" codeSystem="2.16.840.1.113883.6.1" displayName="Unspecified body region CT"/>
+                            <text>
+                                <reference value="#proc-14"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="20200728"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4064"/>
+                            <id root="0659a2c7-035f-4245-93b2-2afadef99be1"/>
+                            <code code="42148-7" codeSystem="2.16.840.1.113883.6.1" displayName="Heart US"/>
+                            <text>
+                                <reference value="#proc-15"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime value="201903261234"/>
+                            <value xsi:type="CE" code="OPB" codeSystem="1.2.276.0.76.3.1.195.5.51" displayName="ohne path. Befund"/>
+                        </observation>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <!-- Allergien, Unverträglichkeiten -->
+                <section classCode="DOCSECT" moodCode="EVN">
+                    <templateId root="1.2.276.0.76.10.3051"/>
+                    <code code="48765-2" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Allergies &amp;or adverse reactions"/>
+                    <title>Allergien und Unverträglichkeiten</title>
+                    <text>
+                        <list>
+                            <item ID="alg">Allergien: nein</item>
+                            <item ID="int">Unverträglichkeiten: nein</item>
+                        </list>
+                    </text>
+                    <entry typeCode="COMP">
+                        <act classCode="ACT" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4065"/>
+                            <id root="1.2.276.0.76.4.17.9814184919" extension="15100194-6d6e-4b00-a4d8-effeb66596b4"/>
+                            <code code="CONC" codeSystem="2.16.840.1.113883.5.6"/>
+                            <statusCode code="active"/>
+                            <!-- This is the time stamp for when the allergy was first documented as a concern-->
+                            <effectiveTime>
+                                <low value="20161212"/>
+                            </effectiveTime>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN" negationInd="true">
+                                    <templateId root="1.2.276.0.76.10.4066"/>
+                                    <id root="1.2.276.0.76.4.17.9814184919" extension="4adc1020-7b14-11db-9fe1-0800200c9a66"/>
+                                    <code code="ASSERTION" codeSystem="2.16.840.1.113883.5.4"/>
+                                    <statusCode code="completed"/>
+                                    <!-- N/A - author/time records when this assertion was made -->
+                                    <effectiveTime nullFlavor="NA"/>
+                                    <value xsi:type="CV" code="OINT" codeSystem="2.16.840.1.113883.5.4" displayName="adverse reaction upon exposure to an agent"/>
+                                    <participant typeCode="CSM">
+                                        <participantRole classCode="MANU">
+                                            <playingEntity classCode="MMAT">
+                                                <code code="ALGN" codeSystem="1.2.276.0.76.3.1.195.5.52" displayName="Allergen">
+                                                    <originalText>
+                                                        <reference value="#alg-4"/>
+                                                    </originalText>
+                                                </code>
+                                            </playingEntity>
+                                        </participantRole>
+                                    </participant>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="SUBJ">
+                                <!-- Eintrag Keine Allergie + Kontrastmittelallergie inhaltlich nicht sinnvoll, aber gemäß Datensatz nicht ausgeschlossen -->
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4066"/>
+                                    <id root="1.2.276.0.76.4.17.9814184919" extension="c9599ec1-6077-4f74-b58e-80c4148efbd8"/>
+                                    <code code="ASSERTION" codeSystem="2.16.840.1.113883.5.4"/>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="202007281544"/>
+                                        <high value="202007281659"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CV" code="OINT" codeSystem="2.16.840.1.113883.5.4" displayName="adverse reaction upon exposure to an agent"/>
+                                    <participant typeCode="CSM">
+                                        <participantRole classCode="MANU">
+                                            <playingEntity classCode="MMAT">
+                                                <code code="V08" codeSystem="2.16.840.1.113883.6.73" displayName="Kontrastmittel"/>
+                                            </playingEntity>
+                                        </participantRole>
+                                    </participant>
+                                </observation>
+                            </entryRelationship>
+                        </act>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3054"/>
+                    <code code="67781-5" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Summarization of encounter note"/>
+                    <title>Befunde / Verlauf / durchgeführte Therapie</title>
+                    <text>
+                        Timo Kicker, geboren am 31.05.1996 in Dankbor, wohnhaft München, stellt sich am 17. Januar 2015 um 16:03 Uhr in der Notaufnahme des Krankenhauses selbst vor. Er hat beim Training des Fußballvereins mit dem linken Fuß ein Distorsionstrauma erlitten und wird von seinem Vereinskollegen humpelnd in die Notaufnahme gebracht. In der Notaufnahme wird kein Ersteinschätzungssystem eingesetzt. Als Leitsymptom wird die Verletzung der unteren Extremität mit CEDIS-Code 557 erhoben.
+                    </text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <procedure classCode="PROC" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4068"/>
+                            <id root="ba6d1bac-17d3-4195-89c4-1121bc809b5e"/>
+                            <code code="ISO" codeSystem="1.2.276.0.76.3.1.195.5.54" displayName="Isolation"/>
+                            <text>
+                                <reference value="#iso"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <entryRelationship typeCode="RSON">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <!-- Isolation Indication -->
+                                    <templateId root="1.2.276.0.76.10.4069"/>
+                                    <id root="45f99818-637b-4be7-bc22-a7041c1cf842"/>
+                                    <code code="44100-6" codeSystem="2.16.840.1.113883.6.1" displayName="Medical Problem"/>
+                                    <statusCode code="completed"/>
+                                    <value  xsi:type="CV" code="U80" codeSystem="2.16.840.1.113883.6.3" displayName="multiresistenter Keim"/>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="RSON">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <!-- Isolation Indication -->
+                                    <templateId root="1.2.276.0.76.10.4069"/>
+                                    <id root="45f99818-637b-4be7-bc22-a7041c1cf842"/>
+                                    <code code="44100-6" codeSystem="2.16.840.1.113883.6.1" displayName="Medical Problem"/>
+                                    <statusCode code="completed"/>
+                                    <value  xsi:type="CV" code="G03.9" codeSystem="2.16.840.1.113883.6.3" displayName="Meningitis"/>
+                                </observation>
+                            </entryRelationship>
+                        </procedure>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <!-- Abschlussdiagnosen -->
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3055"/>
+                    <code code="11301-9" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="ED diagnosis"/>
+                    <title>Abschlussdiagnosen</title>
+                    <text>
+                        <list>
+                            <item ID="diag-1">Distorsion unteres Sprunggelenk (S96.3)</item>
+                        </list>
+                    </text>
+                    <entry typeCode="COMP">
+                        <act classCode="ACT" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4048"/>
+                            <id root="1.2.276.0.76.4.17.9814184919" extension="4193be05-5a9a-4e94-ad03-e35c0c5ca739"/>
+                            <code code="CONC" codeSystem="2.16.840.1.113883.5.6" displayName="Concern"/>
+                            <statusCode code="active"/>
+                            <effectiveTime>
+                                <low value="20200728"/>
+                            </effectiveTime>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4049"/>
+                                    <id root="1.2.276.0.76.4.17.9814184919" extension="45f99818-637b-4be7-bc22-a7041c1cf813"/>
+                                    <code code="75324-4" codeSystem="2.16.840.1.113883.6.1" displayName="Diagnosis"/>
+                                    <text>
+                                        <reference value="#diag-1"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="20200728"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CD" code="B30" codeSystem="1.2.276.0.76.5.424" codeSystemName="icd10gm2015" displayName="Husten"/>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="SUBJ">
+                                <sequenceNumber value="1"/>
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4049"/>
+                                    <id root="45f99818-637b-4be7-bc22-a7041c1cf813"/>
+                                    <code code="75324-4" codeSystem="2.16.840.1.113883.6.1" displayName="Diagnosis"/>
+                                    <text>
+                                        <reference value="#diag-2"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="202007281556"/>
+                                        <high value="202007281557"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CD" code="S09.1" codeSystem="1.2.276.0.76.5.424" codeSystemName="icd10gm2015" displayName="Hier könnte ihre Diagnose stehen">
+                                        <originalText>Kopf ab</originalText>
+                                        <qualifier>
+                                            <name code="8" codeSystem="2.16.840.1.113883.3.7.1.0"/>
+                                            <value code="A" codeSystem="1.2.276.0.76.3.1.1.5.1.21"/>
+                                        </qualifier>
+                                        <qualifier>
+                                            <name code="FSTAT" codeSystem="1.2.276.0.76.3.1.195.5.72" displayName="Befundstatus"/>
+                                            <value code="CONF" codeSystem="1.2.276.0.76.3.1.195.5.73" displayName="Gesichert"/>
+                                        </qualifier>
+                                    </value>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="SUBJ">
+                                <sequenceNumber value="2"/>
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4049"/>
+                                    <id root="45f99818-637b-4be7-bc22-a7041c1cf813"/>
+                                    <code code="75324-4" codeSystem="2.16.840.1.113883.6.1" displayName="Diagnosis"/>
+                                    <text>
+                                        <reference value="#diag-3"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="202007281556"/>
+                                        <high value="202007281557"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CD" code="U07.1" codeSystem="1.2.276.0.76.5.424" codeSystemName="icd10gm2015" displayName="Schädlicher Gebrauch von nichtabhängigkeitserzeugenden Substanzen: Analgetika">
+                                        <qualifier>
+                                            <name code="8" codeSystem="2.16.840.1.113883.3.7.1.0"/>
+                                            <value code="G" codeSystem="1.2.276.0.76.3.1.1.5.1.21"/>
+                                        </qualifier>
+                                    </value>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4049"/>
+                                    <id root="45f99818-637b-4be7-bc22-a7041c1cf813"/>
+                                    <code code="75324-4" codeSystem="2.16.840.1.113883.6.1" displayName="Diagnosis"/>
+                                    <text>
+                                        <reference value="#diag-4"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="202007281556"/>
+                                        <high value="202007281557"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CD" code="B44.0" codeSystem="1.2.276.0.76.5.424" codeSystemName="icd10gm2015" displayName="Nicht näher bezeichnete Sehbeeinträchtigung (binokular)"/>
+                                </observation>
+                            </entryRelationship>
+                            <entryRelationship typeCode="SUBJ">
+                                <observation classCode="OBS" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4049"/>
+                                    <id root="45f99818-637b-4be7-bc22-a7041c1cf813"/>
+                                    <code code="75324-4" codeSystem="2.16.840.1.113883.6.1" displayName="Diagnosis"/>
+                                    <text>
+                                        <reference value="#diag-5"/>
+                                    </text>
+                                    <statusCode code="completed"/>
+                                    <effectiveTime>
+                                        <low value="202007281556"/>
+                                        <high value="202007281557"/>
+                                    </effectiveTime>
+                                    <value xsi:type="CD" code="Y34.9" codeSystem="1.2.276.0.76.5.424" codeSystemName="icd10gm2015" displayName="Nicht näher bezeichnetes Ereignis, Umstände unbestimmt">
+                                        <qualifier>
+                                            <name code="8" codeSystem="2.16.840.1.113883.3.7.1.0"/>
+                                            <value code="A" codeSystem="1.2.276.0.76.3.1.1.5.1.21"/>
+                                        </qualifier>
+                                    </value>
+                                </observation>
+                            </entryRelationship>
+                        </act>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3049"/>
+                    <code code="11283-9" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Acuity assessment"/>
+                    <title>Ersteinschätzung</title>
+                    <text>Ersteinschätzung</text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <observation classCode="OBS" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4042"/>
+                            <id root="45f99818-637b-4be7-bc22-a7041c1cf813"/>
+                            <code code="11283-9" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Acuity assessment"/>
+                            <text>
+                                <reference value="#triage"/>
+                            </text>
+                            <statusCode code="completed"/>
+                            <effectiveTime>
+                                <low value="202007281603"/>
+                                <high value="202007281608"/>
+                            </effectiveTime>
+                            <value xsi:type="CE" code="4" codeSystem="1.2.276.0.76.5.438" displayName="normal - grün - 90 Minuten"/>
+                        </observation>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <section classCode="DOCSECT">
+                    <templateId root="1.2.276.0.76.10.3056"/>
+                    <code code="67661-9" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="EMS disposition"/>
+                    <title>Weiteres Procedere / Therapieempfehlung / Weiterbehandler</title>
+                    <text>
+                        <list>
+                            <item ID="refact">Weiterbehandler: Hausarzt</item>
+                            <item>Weiteres Procedere:</item>
+                            <item>Therapieempfehlung:</item>
+                            <item>Weiterbehandler:</item>
+                        </list>
+                    </text>
+
+                    <entry typeCode="COMP">
+                        <act classCode="ACT" moodCode="INT">
+                            <templateId root="1.2.276.0.76.10.4067"/>
+                            <code code="5" codeSystem="1.2.276.0.76.3.1.195.5.53" displayName="intern: Normalstation"/>
+                            <text>
+                                <reference value="#refact"/>
+                            </text>
+                        </act>
+                    </entry>
+                </section>
+            </component>
+
+            <component typeCode="COMP" contextConductionInd="true">
+                <section classCode="DOCSECT">
+                    <templateId  root="1.2.276.0.76.10.3057"/>
+                    <code code="11516-2" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Physician Records total Encounter"/>
+                    <title>Zusatzmodule</title>
+                    <text>
+                        <list>
+                            <item ID="refact2">Weiterbehandler: Hausarzt</item>
+                        </list>
+                    </text>
+                    <entry typeCode="COMP" contextConductionInd="true">
+                        <act classCode="ACT" moodCode="EVN">
+                            <templateId root="1.2.276.0.76.10.4070"/>
+                            <id root="285e1c44-5027-4b2b-b21c-e987b55567ee"/>
+                            <code code="11516-2" codeSystem="2.16.840.1.113883.6.1"/>
+                            <text>
+                                <reference value="#edoc-1"/>
+                            </text>
+                            <reference typeCode="SPRT">
+                                <externalDocument classCode="DOC" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4071"/>
+                                    <code code="53576-5" codeSystem="2.16.840.1.113883.6.1"/>
+                            	    <text>
+                                        <reference value="#edoc-1"/>
+                                    </text>
+                                </externalDocument>
+                            </reference>
+                            <reference typeCode="SPRT">
+                            	<externalDocument classCode="DOC" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4071"/>
+                                    <code code="11488-4" codeSystem="2.16.840.1.113883.6.1"/>
+                                </externalDocument>
+                            </reference>
+                            <reference typeCode="SPRT">
+                            	<externalDocument classCode="DOC" moodCode="EVN">
+                                    <templateId root="1.2.276.0.76.10.4071"/>
+                                    <code code="74198-3" codeSystem="2.16.840.1.113883.6.1"/>
+                                </externalDocument>
+                            </reference>
+                        </act>
+                    </entry>
+                </section>
+            </component>
+        </structuredBody>
+    </component>
+</ClinicalDocument>
