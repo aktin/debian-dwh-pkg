@@ -13,7 +13,7 @@ set -a
 . "${DRESOURCES}/versions"
 set +a
 
-function dwh_j2ee() {
+function download_dwh_j2ee() {
 	DWILDFLYDEPLOYMENTS="${1}"
 
 	mkdir -p "${DBUILD}${DWILDFLYDEPLOYMENTS}"
@@ -22,40 +22,49 @@ function dwh_j2ee() {
 	cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${VDWH_J2EE}/dwh-j2ee-${VDWH_J2EE}.ear" "${DBUILD}${DWILDFLYDEPLOYMENTS}/dwh-j2ee-${VDWH_J2EE}.ear"
 }
 
-function aktin_properties() {
+function config_apache2_proxy() {
+	DAPACHE2CONF="${1}"
+	WILDFLYHOST="${2}"
+
+	mkdir -p "${DBUILD}${DAPACHE2CONF}"
+	sed -e "s/__WILDFLYHOST__/${WILDFLYHOST}/g" "${DRESOURCES}/aktin-j2ee-reverse-proxy.conf" >"${DBUILD}${DAPACHE2CONF}/aktin-j2ee-reverse-proxy.conf"
+}
+
+function create_aktin_dir() {
+	DAKTINDIR="${1}"
+
+	mkdir -p "${DBUILD}${DAKTINDIR}"
+}
+
+function copy_aktin_properties() {
 	DAKTINCONF="${1}"
 
 	mkdir -p "${DBUILD}${DAKTINCONF}"
 	cp "${DRESOURCES}/aktin.properties" "${DBUILD}${DAKTINCONF}/"
 }
 
-function aktin_dir() {
-	DAKTIN="${1}"
-
-	mkdir -p "${DBUILD}${DAKTIN}"
-}
-
-function aktin_importscripts() {
+function copy_aktin_importscripts() {
 	DAKTINIMPORTSCRIPTS="${1}"
 
 	mkdir -p "$(dirname "${DBUILD}${DAKTINIMPORTSCRIPTS}")"
 	cp -r "${DRESOURCES}/import-scripts" "${DBUILD}${DAKTINIMPORTSCRIPTS}"
 }
 
-function aktin_importdir() {
-	DAKTINIMPORT="${1}"
-
-	mkdir -p "${DBUILD}${DAKTINIMPORT}"
-}
-
-function database_postinstall() {
+function copy_database_for_postinstall() {
 	DDBPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDBPOSTINSTALL}")"
 	cp -r "${DRESOURCES}/database" "${DBUILD}${DDBPOSTINSTALL}"
 }
 
-function datasource_postinstall() {
+function copy_database_update_for_postinstall() {
+	DDBUPDATEPOSTINSTALL="$1"
+
+	mkdir -p "$(dirname "${DBUILD}${DDBUPDATEPOSTINSTALL}")"
+	cp -r "${DRESOURCES}/database-update" "${DBUILD}${DDBUPDATEPOSTINSTALL}"
+}
+
+function copy_datasource_for_postinstall() {
 	DDSPOSTINSTALL="$1"
 
 	mkdir -p "$(dirname "${DBUILD}${DDSPOSTINSTALL}")"
@@ -63,12 +72,13 @@ function datasource_postinstall() {
 }
 
 function build_linux() {
-	dwh_j2ee "/opt/wildfly/standalone/deployments"
-	aktin_properties "/etc/aktin"
-	aktin_dir "/var/lib/aktin"
-	aktin_importscripts "/var/lib/aktin/import-scripts"
-	aktin_importdir "/var/lib/aktin/import"
-	database_postinstall "/usr/share/${PACKAGE}/database"
-	datasource_postinstall "/usr/share/${PACKAGE}/datasource"
+	download_dwh_j2ee "/opt/wildfly/standalone/deployments"
+	config_apache2_proxy "/etc/apache2/conf-available" "localhost"
+	create_aktin_dir "/var/lib/aktin"
+	create_aktin_dir "/var/lib/aktin/import"
+	copy_aktin_properties "/etc/aktin"
+	copy_aktin_importscripts "/var/lib/aktin/import-scripts"
+	copy_database_for_postinstall "/usr/share/${PACKAGE}/database"
+	copy_database_update_for_postinstall "/usr/share/${PACKAGE}/database-update"
+	copy_datasource_for_postinstall "/usr/share/${PACKAGE}/datasource"
 }
-

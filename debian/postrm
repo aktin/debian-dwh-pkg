@@ -5,6 +5,17 @@ set -e
 
 case "$1" in
 	remove)
+		db_input high $DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http || true
+		db_go || true
+		db_fset $DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http seen false
+		db_get $DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http
+		if [ "$RET" = "Yes" ]; then
+			echo "Disabling apache2 proxy_http module ..."
+			a2dismod proxy_http >/dev/null || true
+		fi
+		a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
+		systemctl restart apache2.service || true
+
 		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
 		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml
 		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml.*
@@ -38,4 +49,3 @@ EOF
 esac
 
 systemctl start wildfly.service 2> /dev/null || true
-

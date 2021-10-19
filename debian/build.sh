@@ -21,6 +21,7 @@ rm -rf "${DIR}/build"
 . "$(dirname "${DIR}")/common/build.sh"
 build_linux
 
+# Prepare .deb management scripts and control files
 mkdir -p "${DBUILD}/DEBIAN"
 sed -e "s/__PACKAGE__/${PACKAGE}/g" \
     -e "s/__VERSION__/${VERSION}/g" \
@@ -36,4 +37,3 @@ sed -e "/^__AKTIN_DROP__/{r ${DRESOURCES}/database/aktin_postgres_drop.sql" -e '
 
 dpkg-deb --build "${DBUILD}"
 rm -rf "${DBUILD}"
-
