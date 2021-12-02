@@ -78,6 +78,13 @@ do
 	eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f $sqlfile" >/dev/null
 done
 
+# update files uploaded with old p21 scripts to newest script id
+if [[ ! -z $(ls /var/lib/aktin/import) ]]; then
+	for folder in /var/lib/aktin/import/*; do
+		sed -i "s|script=.*|script=p21|" $folder/properties
+	done
+fi
+
 # deploy aktin datasource
 sed -e "s/__HOST__/$host/g" \
     -e "s/__PORT__/$port/g" \
