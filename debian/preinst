@@ -1,3 +1,14 @@
 #!/bin/bash
 set -e
 systemctl stop wildfly.service || true
+
+case "$1" in
+	upgrade)
+		# back up aktin properties on upgrade
+        PATH_PROPERTIES=/opt/wildfly/standalone/configuration/aktin.properties
+        if [[ -f $PATH_PROPERTIES ]]; then
+        cp -f $PATH_PROPERTIES /etc/aktin/backup_$(date +%Y_%H_%d_%H%M).properties;
+        fi
+    ;;
+esac
+

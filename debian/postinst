@@ -12,6 +12,34 @@ readonly BYEL='\e[1;33m'
 . /usr/share/debconf/confmodule
 DEBCONF_NAME=$(echo $DPKG_MAINTSCRIPT_PACKAGE | awk -F '-' '{print $1"-"$2}')
 
+# apply aktin properties backup on package upgrade
+case "$1" in
+	configure)
+		if [[ $(ls /etc/aktin/ | grep -c "backup_*") > 0 ]]; then
+		PATH_PROPERTIES=/etc/aktin/aktin.properties
+		BACKUP_NEWEST=$(ls -t /etc/aktin/backup_* | head -1);
+		# iterate through all rows in backup,
+   		# SOL until '=' -> KEY
+   		# '=' until EOL -> VALUE
+   		# overwrite value in aktin.properties with backup if found
+		while read -r line_backup; do
+			if [[ ! $line_backup = \#* && ! -z $line_backup ]]; then
+			KEY=${line_backup%=*}
+			VALUE=${line_backup#*=}
+			while read -r line_org; do
+				if [[ ! $line_org = \#* && ! -z $line_org ]]; then
+					if [[ ${line_org%=*} == $KEY ]]; then
+					sed -i "s|${KEY}=.*|${KEY}=${VALUE}|" $PATH_PROPERTIES
+					break
+					fi
+				fi
+			done < $PATH_PROPERTIES
+			fi
+		done < $BACKUP_NEWEST
+		fi
+	;;
+esac
+
 # create link for aktin.properties
 chown -R wildfly:wildfly /etc/aktin
 ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
@@ -81,7 +109,7 @@ done
 # update files uploaded with old p21 scripts to newest script id
 if [[ ! -z $(ls /var/lib/aktin/import) ]]; then
 	for folder in /var/lib/aktin/import/*; do
-		sed -i "s|script=.*|script=p21|" $folder/properties
+		sed -i "s|script=p21.*|script=p21|" $folder/properties
 	done
 fi
 
