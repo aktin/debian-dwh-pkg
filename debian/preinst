@@ -7,7 +7,7 @@ case "$1" in
 		# back up aktin properties on upgrade
         PATH_PROPERTIES=/opt/wildfly/standalone/configuration/aktin.properties
         if [[ -f $PATH_PROPERTIES ]]; then
-        cp -f $PATH_PROPERTIES /etc/aktin/backup_$(date +%Y_%H_%d_%H%M).properties;
+        cp -f $PATH_PROPERTIES /etc/aktin/backup_$(date +%Y_%m_%d_%H%M).properties;
         fi
     ;;
 esac
