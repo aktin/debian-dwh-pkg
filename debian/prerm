@@ -1,2 +1,10 @@
 #!/bin/bash
 systemctl stop wildfly.service
+
+case "$1" in
+	upgrade)
+		# remove current deployed EAR on upgrade
+		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
+		;;
+esac
+
