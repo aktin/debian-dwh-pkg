@@ -5,7 +5,7 @@
         <datasource jta="false" jndi-name="java:jboss/datasources/AktinDS" pool-name="AktinDS">
                 <connection-url>jdbc:postgresql://__HOST__:__PORT__/aktin</connection-url>
                 <driver-class>org.postgresql.Driver</driver-class>
-                <driver>postgresql-42.2.8.jar</driver>
+                <driver>postgresql-42.7.3.jar</driver>
                 <security>
                         <user-name>aktin</user-name>
                         <password>aktin</password>
