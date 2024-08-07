@@ -1,0 +1,16 @@
+# Start embed server for offline standalone.xml manipulation
+embed-server
+
+data-source add --name=AktinDS --jndi-name=java:/jboss/datasources/AktinDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/aktin --user-name=aktin --password=aktin --jta=false --use-ccm=false
+
+# Configure the validation settings for datasources
+/subsystem=datasources/data-source=AktinDS:write-attribute(name=validate-on-match,value=false)
+/subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation,value=true)
+/subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation-millis,value=60000)
+/subsystem=datasources/data-source=AktinDS:write-attribute(name=use-fast-fail,value=true)
+/subsystem=datasources/data-source=AktinDS:write-attribute(name=check-valid-connection-sql,value="SELECT 1")
+
+# Configure the statement settings
+/subsystem=datasources/data-source=AktinDS:write-attribute(name=share-prepared-statements,value=false)
+
+stop-embedded-server

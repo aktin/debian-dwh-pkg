@@ -13,8 +13,6 @@ services:
   httpd:
     image: ${DWHIMAGENAMESPACE}httpd
     build: build/httpd
-    ports:
-      - "8080:80"
   wildfly:
     image: ${DWHIMAGENAMESPACE}wildfly
     build: build/wildfly

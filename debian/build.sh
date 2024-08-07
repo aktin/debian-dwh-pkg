@@ -19,7 +19,16 @@ rm -rf "${DIR}/build"
 
 # Load common linux files
 . "$(dirname "${DIR}")/common/build.sh"
-build_linux
+
+download_dwh_j2ee "/opt/wildfly/standalone/deployments"
+config_apache2_proxy "/etc/apache2/conf-available" "localhost"
+create_aktin_dir "/var/lib/aktin"
+create_aktin_dir "/var/lib/aktin/import"
+copy_aktin_properties "/etc/aktin"
+copy_aktin_importscripts "/var/lib/aktin/import-scripts"
+copy_database_for_postinstall "/usr/share/${PACKAGE}/database"
+copy_database_update_for_postinstall "/usr/share/${PACKAGE}/database-update"
+copy_datasource_for_postinstall "/usr/share/${PACKAGE}/datasource"
 
 # Prepare .deb management scripts and control files
 mkdir -p "${DBUILD}/DEBIAN"

@@ -1,15 +1,19 @@
 FROM __BASEIMAGE__
 
-COPY ./dwh-j2ee-*.ear /opt/jboss/wildfly/standalone/deployments/
-COPY ./ds/* /usr/share/aktin-notaufnahme-i2b2/datasource/
+WORKDIR /opt/wildfly
+COPY ./dwh-j2ee-*.ear ./standalone/deployments/
 COPY ./import-scripts /var/lib/aktin/import-scripts
 
+COPY ./wildfly_cli/*.cli .
+RUN ./bin/jboss-cli.sh --file=./config.cli
+RUN rm ./*.cli
+
 COPY ./aktin.properties /etc/aktin/
-RUN ln -sf /etc/aktin/aktin.properties /opt/jboss/wildfly/standalone/configuration/
+RUN ln -sf /etc/aktin/aktin.properties ./standalone/configuration/
 
 USER root
-
 RUN mkdir -p /var/lib/aktin/import
-RUN chown -R jboss:jboss /opt/jboss/wildfly/standalone/deployments /usr/share/aktin-notaufnahme-i2b2/datasource /etc/aktin /var/lib/aktin
+RUN chown -R wildfly:wildfly ./standalone/deployments /etc/aktin /var/lib/aktin
 
-USER jboss
+USER wildfly
+WORKDIR /

@@ -1,0 +1,37 @@
+version: '3'
+services:
+  notaufnahme-dwh-wildfly:
+    image: ghcr.io/aktin/notaufnahme-dwh-wildfly
+    hostname: wildfly
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    networks:
+      - aktin-network
+    depends_on:
+      - notaufnahme-dwh-database
+  notaufnahme-dwh-database:
+    image: ghcr.io/aktin/notaufnahme-dwh-database
+    hostname: db
+    volumes:
+      - source: ./postgresql-data
+        target: /var/lib/postgresql/data
+        type: bind
+        bind:
+          create_host_path: true
+    networks:
+      - aktin-network
+  notaufnahme-dwh-httpd:
+    image: ghcr.io/aktin/notaufnahme-dwh-httpd
+    hostname: httpd
+    ports:
+      - "90:80"
+    networks:
+      - aktin-network
+    extra_hosts:
+      host.docker.internal: host-gateway
+    depends_on:
+      - notaufnahme-dwh-wildfly
+networks:
+  aktin-network:
+
