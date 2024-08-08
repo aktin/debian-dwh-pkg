@@ -8,6 +8,8 @@ services:
       DB_PORT: 5432
     networks:
       - aktin-network
+    ports:
+      - "9990:9990"
     depends_on:
       - notaufnahme-dwh-database
   notaufnahme-dwh-database:
@@ -25,11 +27,9 @@ services:
     image: ghcr.io/aktin/notaufnahme-dwh-httpd
     hostname: httpd
     ports:
-      - "90:80"
+      - "80:80"
     networks:
       - aktin-network
-    extra_hosts:
-      host.docker.internal: host-gateway
     depends_on:
       - notaufnahme-dwh-wildfly
 networks:
