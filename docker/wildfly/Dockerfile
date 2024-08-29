@@ -12,8 +12,8 @@ COPY ./aktin.properties /etc/aktin/
 RUN ln -sf /etc/aktin/aktin.properties ./standalone/configuration/
 
 USER root
+RUN rm -rf ./standalone/configuration/standalone_xml_history/current/*
 RUN mkdir -p /var/lib/aktin/import
 RUN chown -R wildfly:wildfly ./standalone/deployments /etc/aktin /var/lib/aktin
 
 USER wildfly
-WORKDIR /
