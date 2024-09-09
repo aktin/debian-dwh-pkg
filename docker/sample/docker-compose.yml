@@ -6,6 +6,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
+      JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Dfile.encoding=UTF-8
     networks:
       - aktin-network
     ports:
