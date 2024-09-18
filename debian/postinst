@@ -113,6 +113,18 @@ if [[ ! -z $(ls /var/lib/aktin/import) ]]; then
 	done
 fi
 
+# AKTIN-367: if exists copy old files to original location
+if [ -d /tmp/aktin/etc/aktin ]; then
+  echo "Restoring /etc/aktin"
+  cp -r /tmp/aktin/etc/aktin/* /etc/aktin
+fi
+
+if [ -d /tmp/aktin/var/lib/aktin ]; then
+  echo "Restoring /var/lib/aktin"
+  cp -r /tmp/aktin/var/lib/aktin/* /var/lib/aktin
+fi
+
+
 # deploy aktin datasource
 sed -e "s/__HOST__/$host/g" \
     -e "s/__PORT__/$port/g" \

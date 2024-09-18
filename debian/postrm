@@ -19,6 +19,7 @@ case "$1" in
 		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
 		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml
 		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml.*
+		rm -rf /var/lib/aktin
 		;;
 	purge)
 		I2B2_SHARED=$(echo $DPKG_MAINTSCRIPT_PACKAGE | awk -F '-' '{print $1"-"$2}')
@@ -45,6 +46,12 @@ __AKTIN_DROP__
 
 EOF
 		# db_purge
+
+    # AKTIN-367 remove temp files
+    if [ -d /tmp/aktin ]; then
+      echo "Purging temp files"
+      rm -rf /tmp/aktin
+    fi
 		;;
 esac
 

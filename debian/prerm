@@ -6,5 +6,17 @@ case "$1" in
 		# remove current deployed EAR on upgrade
 		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
 		;;
+  remove)
+    # AKTIN-367 copy files to tmp folder
+    echo "Moving config to tmp folder"
+    if [ ! -d /tmp/aktin ]; then
+      mkdir -p /tmp/aktin/etc/aktin
+      mkdir -p /tmp/aktin/var/lib/aktin
+    fi
+
+    cp -r /etc/aktin/* /tmp/aktin/etc/aktin
+    cp -r /var/lib/aktin/* /tmp/aktin/var/lib/aktin
+
+    ;;
 esac
 
