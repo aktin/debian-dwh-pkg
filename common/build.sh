@@ -1,46 +1,78 @@
 #!/bin/bash
+#--------------------------------------
+# Script Name:  common/build.sh
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         28 Oct 24
+# Purpose:      This helper script automates the downloading, setup, and configuration of the AKTIN DWH and WildFly application server.
+#               It is used by other build.sh scripts, with all paths relative to the corresponding /build folder.
+
 set -euo pipefail
 
 # Check if variables are empty
-if [ -z "${PACKAGE}" ]; then echo "\$PACKAGE is empty."; exit 1; fi
-if [ -z "${VERSION}" ]; then echo "\$VERSION is empty."; exit 1; fi
-if [ -z "${DBUILD}" ]; then echo "\$DBUILD is empty."; exit 1; fi
+if [ -z "${PACKAGE}" ]; then
+  echo "\$PACKAGE is empty." >&2
+  exit 1
+fi
+if [ -z "${VERSION}" ]; then
+  echo "\$VERSION is empty." >&2
+  exit 1
+fi
+if [ -z "${DIR_BUILD}" ]; then
+  echo "\$DIR_BUILD is empty." >&2
+  exit 1
+fi
 
-# Superdirectory this script is located in + /resources
-DRESOURCES="$( cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &> /dev/null && pwd )/resources"
+# Superdirectory this script is located with /resources appended, namely src/resources
+readonly DIR_RESOURCES="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &>/dev/null && pwd)/resources"
 
-set -a
-. "${DRESOURCES}/versions"
-set +a
+# Define DIR_DOWNLOADS as an absolute path
+readonly DIR_DOWNLOADS="$(dirname "${DIR_RESOURCES}")/downloads"
 
-function download_dwh_j2ee() {
-	DWILDFLYDEPLOYMENTS="${1}"
-
-	mkdir -p "${DBUILD}${DWILDFLYDEPLOYMENTS}"
-	mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VDWH_J2EE}:ear"
-	# dirty
-	cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${VDWH_J2EE}/dwh-j2ee-${VDWH_J2EE}.ear" "${DBUILD}${DWILDFLYDEPLOYMENTS}/dwh-j2ee-${VDWH_J2EE}.ear"
+init_build_environment() {
+  set -a
+  . "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/versions"
+  set +a
+  if [ ! -d "${DIR_BUILD}" ]; then
+    mkdir -p "${DIR_BUILD}"
+  fi
+  if [ ! -d "${DIR_DOWNLOADS}" ]; then
+    mkdir "${DIR_DOWNLOADS}"
+  fi
 }
 
-function config_apache2_proxy() {
-	DAPACHE2CONF="${1}"
-	WILDFLYHOST="${2}"
-
-	mkdir -p "${DBUILD}${DAPACHE2CONF}"
-	sed -e "s/__WILDFLYHOST__/${WILDFLYHOST}/g" "${DRESOURCES}/aktin-j2ee-reverse-proxy.conf" >"${DBUILD}${DAPACHE2CONF}/aktin-j2ee-reverse-proxy.conf"
+clean_up_build_environment() {
+  rm -rf "${DIR_BUILD}"
 }
 
-function create_aktin_dir() {
-	DAKTINDIR="${1}"
+#TODO fix this
+download_and_deploy_dwh_j2ee() {
+  local dir_wildfly_deployments="${1}"
 
-	mkdir -p "${DBUILD}${DAKTINDIR}"
+  mkdir -p "${DBUILD}${dir_wildfly_deployments}"
+  if [ ! -f "${DIR_DOWNLOADS}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" ]; then
+    echo "Download AKTIN DWH EAR Version ${VERSION_AKTIN_DWH_J2EE}"
+    mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VERSION_AKTIN_DWH_J2EE}:ear"
+    # dirty
+    cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${VERSION_AKTIN_DWH_J2EE}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" "${DIR_DOWNLOADS}"
+  fi
+
+  cp "${DIR_DOWNLOADS}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
-function copy_aktin_properties() {
-	DAKTINCONF="${1}"
+configure_apache2_proxy() {
+  local dir_apache2_conf="${1}"
+  local host_wildfly="${2}"
 
-	mkdir -p "${DBUILD}${DAKTINCONF}"
-	cp "${DRESOURCES}/aktin.properties" "${DBUILD}${DAKTINCONF}/"
+  mkdir -p "${DIR_BUILD}${dir_apache2_conf}"
+  sed -e "s/__WILDFLY_HOST__/${host_wildfly}/g" "${DIR_RESOURCES}/aktin-j2ee-reverse-proxy.conf" > "${DIR_BUILD}${dir_apache2_conf}/aktin-j2ee-reverse-proxy.conf"
+}
+
+deploy_aktin_properties() {
+  local dir_aktin_properties="${1}"
+
+  mkdir -p "${DIR_BUILD}${dir_aktin_properties}"
+  cp "${DIR_RESOURCES}/aktin.properties" "${DIR_BUILD}${dir_aktin_properties}/"
 }
 
 function copy_aktin_importscripts() {
