@@ -46,7 +46,7 @@ prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders in the control file
-  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" -e "s/__I2B2_PACKAGE__/${PACKAGE_I2B2}" -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" -e "s/__I2B2_PACKAGE_DEPENDENCY__/${PACKAGE_I2B2}" -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
 
   # Prepare .deb management scripts and control files
   sed -e "s/__I2B2_SHARED__/$(echo "${PACKAGE}" | awk -F '-' '{print $1"-"$2}')/g" -e "s/__PACKAGE__/${PACKAGE}/g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
