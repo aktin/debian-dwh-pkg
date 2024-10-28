@@ -1,19 +1,29 @@
 #!/bin/sh
+#--------------------------------------
+# Script Name:  config
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         28 Oct 24
+# Purpose:      Debconf configuration script that prompts for database connection settings for 'aktin-notaufnahme-dwh'. It collects user inputs for
+#               the database connection method and credentials, guiding the installation process.
+#--------------------------------------
 
 # Exit on error
 set -e
 
-# Source debconf library.
+# Source debconf library
 . /usr/share/debconf/confmodule
 
-# Ask questions
+# Ask user how they want to connect to the database
 db_input low aktin-notaufnahme/db_conn || true
 
-if [ ! "$RET" = "unix" ]; then
-	db_input low aktin-notaufnahme/db_host || true
-	db_input low aktin-notaufnahme/db_port || true
-	db_input low aktin-notaufnahme/db_user || true
-	db_input low aktin-notaufnahme/db_pass || true
+# If user did not select unix as the connection method
+if [ "$RET" != "unix" ]; then
+  # Ask for database connection details
+  db_input low aktin-notaufnahme/db_host || true
+  db_input low aktin-notaufnahme/db_port || true
+  db_input low aktin-notaufnahme/db_user || true
+  db_input low aktin-notaufnahme/db_pass || true
 fi
 
 # Show interface
