@@ -1,5 +1,5 @@
 --
--- delete database 'aktin' with its user (needed for installation reset)
+-- Delete database 'aktin' with its user (needed for installation reset)
 --
 
 DROP DATABASE IF EXISTS aktin;

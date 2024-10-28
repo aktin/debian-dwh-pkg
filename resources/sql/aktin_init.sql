@@ -1,5 +1,5 @@
 --
--- create new database 'aktin' with its user
+-- Create new database 'aktin' with its user
 --
 
 CREATE DATABASE aktin;
