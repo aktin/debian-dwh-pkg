@@ -6,6 +6,7 @@
 # Date:         28 Oct 24
 # Purpose:      This helper script automates the downloading, setup, and configuration of the AKTIN DWH and WildFly application server.
 #               It is used by other build.sh scripts, with all paths relative to the corresponding /build folder.
+#--------------------------------------
 
 set -euo pipefail
 
@@ -46,7 +47,7 @@ clean_up_build_environment() {
 }
 
 #TODO fix this
-download_and_deploy_dwh_j2ee() {
+download_and_copy_dwh_j2ee() {
   local dir_wildfly_deployments="${1}"
 
   mkdir -p "${DBUILD}${dir_wildfly_deployments}"
@@ -60,7 +61,7 @@ download_and_deploy_dwh_j2ee() {
   cp "${DIR_DOWNLOADS}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
-deploy_apache2_proxy_configuration() {
+copy_apache2_proxy_config() {
   local dir_apache2_conf="${1}"
   local host_wildfly="${2}"
 
@@ -68,23 +69,23 @@ deploy_apache2_proxy_configuration() {
   sed -e "s/__WILDFLY_HOST__/${host_wildfly}/g" "${DIR_RESOURCES}/httpd/aktin-j2ee-reverse-proxy.conf" > "${DIR_BUILD}${dir_apache2_conf}/aktin-j2ee-reverse-proxy.conf"
 }
 
-deploy_aktin_properties() {
+copy_aktin_properties() {
   local dir_aktin_properties="${1}"
 
   mkdir -p "${DIR_BUILD}${dir_aktin_properties}"
   cp "${DIR_RESOURCES}/aktin.properties" "${DIR_BUILD}${dir_aktin_properties}/"
 }
 
-download_and_deploy_aktin_import_scripts() {
+download_and_copy_aktin_import_scripts() {
   local dir_import_scripts="${1}"
 
   mkdir -p "${DIR_BUILD}${dir_import_scripts}"
-  deploy_p21_import_script "${DIR_DOWNLOADS}"
+  download_p21_import_script "${DIR_DOWNLOADS}"
 
   cp -r "${DIR_DOWNLOADS}/import-scripts" "${DIR_BUILD}${dir_import_scripts}"
 }
 
-deploy_p21_import_script() {
+download_p21_import_script() {
     local dir_downloads="${1}"
     local local_p21="${dir_downloads}/import-scripts/p21import.py"
     local local_version="0.0.0"
