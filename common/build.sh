@@ -75,11 +75,44 @@ deploy_aktin_properties() {
   cp "${DIR_RESOURCES}/aktin.properties" "${DIR_BUILD}${dir_aktin_properties}/"
 }
 
-function copy_aktin_importscripts() {
-	DAKTINIMPORTSCRIPTS="${1}"
+download_and_deploy_aktin_import_scripts() {
+  local dir_import_scripts="${1}"
 
-	mkdir -p "$(dirname "${DBUILD}${DAKTINIMPORTSCRIPTS}")"
-	cp -r "${DRESOURCES}/import-scripts" "${DBUILD}${DAKTINIMPORTSCRIPTS}"
+  mkdir -p "${DIR_BUILD}${dir_import_scripts}"
+  deploy_p21_import_script "${DIR_DOWNLOADS}"
+
+  cp -r "${DIR_RESOURCES}/import-scripts" "${DIR_BUILD}${dir_import_scripts}"
+}
+
+deploy_p21_import_script() {
+    local dir_downloads="$1"
+    local local_p21="${dir_downloads}/p21import.py"
+    local local_version="0.0.0"
+
+    # Check if the local p21import.py exists and extract its version
+    if [ -f "$local_p21" ]; then
+        local_version=$(grep '^# @VERSION=' "$local_p21" | sed 's/^# @VERSION=//')
+    fi
+
+    # Get the version from GitHub
+    local github_p21_url="https://raw.githubusercontent.com/aktin/p21-script/main/src/p21import.py"
+    local github_version=$(curl -s "$github_p21_url" | grep '^# @VERSION=' | sed 's/^# @VERSION=//')
+
+    # Compare versions
+    if [ "$local_version" = "$github_version" ]; then
+        # Versions are the same, do nothing
+        echo "p21import.py is up to date (version $local_version)."
+    else
+        # Determine if the GitHub version is newer
+        if [ "$(printf '%s\n' "$local_version" "$github_version" | sort -V | head -n1)" = "$local_version" ] && [ "$local_version" != "$github_version" ]; then
+            # Local version is older, download the newer script
+            echo "Updating p21import.py to version $github_version."
+            curl -s -o "$local_p21" "$github_p21_url"
+        else
+            # Local version is newer or versions are incomparable
+            echo "Local p21import.py version ($local_version) is up-to-date or newer than GitHub version ($github_version)."
+        fi
+    fi
 }
 
 function copy_database_for_postinstall() {
@@ -109,6 +142,3 @@ function copy_wildfly_config_for_postinstall() {
 	mkdir -p "$(dirname "${DBUILD}${DDSPOSTINSTALL}")"
 	cp -r "${DRESOURCES}/wildfly_cli" "${DBUILD}${DDSPOSTINSTALL}"
 }
-
-
-
