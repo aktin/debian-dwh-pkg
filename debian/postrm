@@ -1,51 +1,93 @@
 #!/bin/bash
-set -e
+#--------------------------------------
+# Script Name:  postrm
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         29 Oct 24
+# Purpose:      Post-removal script for 'aktin'. This script handles the removal and purging of configurations for Apache and PostgreSQL,
+#               disabling Apache modules as needed and removing WildFly deployments.
+#--------------------------------------
 
-. /usr/share/debconf/confmodule
+readonly OPERATION="${1}"
 
-case "$1" in
-	remove)
-		db_input high $DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http || true
-		db_go || true
-		db_fset $DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http seen false
-		db_get $DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http
-		if [ "$RET" = "Yes" ]; then
-			echo "Disabling apache2 proxy_http module ..."
-			a2dismod proxy_http >/dev/null || true
-		fi
-		a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
-		systemctl restart apache2.service || true
+disable_apache_proxy_http() {
+  . /usr/share/debconf/confmodule
+  db_input high "$DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http" || true
+  db_go || true
+  db_fset "$DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http" seen false
+  db_get "$DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http"
 
-		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
-		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml
-		rm -f /opt/wildfly/standalone/deployments/aktin-ds.xml.*
-		;;
-	purge)
-		I2B2_SHARED=$(echo $DPKG_MAINTSCRIPT_PACKAGE | awk -F '-' '{print $1"-"$2}')
-		PSQL=""
-		db_get $I2B2_SHARED/db_conn
-		if [ "$RET" = "unix" ]; then
-			PSQL="sudo -u postgres psql"
-			echo "Connecting to postgres via local unix socket."
-		else
-			db_get $I2B2_SHARED/db_host
-			host="$RET"
-			db_get $I2B2_SHARED/db_port
-			port="$RET"
-			db_get $I2B2_SHARED/db_user
-			user="$RET"
-			db_get $I2B2_SHARED/db_pass
-			pass="$RET"
-			PSQL="psql postgresql://$user:$pass@$host:$port?sslmode=require"
-			echo "Connecting to postgres via TCP/IP to $host:$port."
-		fi
-		echo "Dropping AKTIN database ..."
-		eval "$PSQL -v ON_ERROR_STOP=1" <<EOF >/dev/null
-__AKTIN_DROP__
+  if [ "$RET" = "Yes" ]; then
+    echo "Disabling Apache2 proxy_http module..."
+    a2dismod proxy_http >/dev/null || true
+  fi
+
+  a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
+  systemctl restart apache2.service || true
+}
+
+remove_wildfly_deployments() {
+  rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
+  echo "Removed WildFly DWH deployments."
+}
+
+connect_to_psql() {
+  . /usr/share/debconf/confmodule
+  local debconf_name
+  debconf_name=$(echo "$DPKG_MAINTSCRIPT_PACKAGE" | awk -F '-' '{print $1"-"$2}')
+
+  db_get "${debconf_name}/db_conn"
+  if [ "$RET" = "unix" ]; then
+    readonly PSQL="sudo -u postgres psql"
+    echo "Connecting to postgres via local unix socket."
+  else
+    db_get "${debconf_name}/db_host"; local host="$RET"
+    db_get "${debconf_name}/db_port"; local port="$RET"
+    db_get "${debconf_name}/db_user"; local user="$RET"
+    db_get "${debconf_name}/db_pass"; local pass="$RET"
+    readonly PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
+    echo "Connecting to postgres via TCP/IP to $host:$port."
+  fi
+}
+
+wait_for_psql_connection() {
+  local waitcount=0
+  while ! systemctl start postgresql 2>/dev/null; do
+    if [ "$waitcount" -lt 12 ]; then
+      echo "Database not yet installed. Waiting ..."
+      waitcount=$((waitcount + 1))
+      sleep 5
+    else
+      echo "Database not yet installed. Aborting ..."
+      exit 1
+    fi
+  done
+  systemctl enable postgresql.service
+}
+
+drop_aktin_database() {
+  echo "Dropping i2b2 PostgreSQL database and user..."
+  eval "${PSQL} -v ON_ERROR_STOP=1" <<EOF >/dev/null
+__AKTIN_DROP_STATEMENT__
 
 EOF
-		# db_purge
-		;;
-esac
+}
 
-systemctl start wildfly.service 2> /dev/null || true
+main() {
+  set -euo pipefail
+  case "$OPERATION" in
+    remove)
+      disable_apache_proxy_http
+      remove_wildfly_deployments
+      ;;
+    purge)
+      drop_aktin_database
+      ;;
+  esac
+
+  # Start WildFly service after completion
+  systemctl start wildfly.service 2> /dev/null || true
+  echo "WildFly service started."
+}
+
+main "$@"

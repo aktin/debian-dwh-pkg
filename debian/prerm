@@ -1,10 +1,40 @@
 #!/bin/bash
-systemctl stop wildfly.service
+#--------------------------------------
+# Script Name:  prerm.sh
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         29 Oct 24
+# Purpose:      Pre-removal script for 'aktin'. Stops the WildFly service and removes the current deployed DWH EAR files during an upgrade.
+#--------------------------------------
 
-case "$1" in
-	upgrade)
-		# remove current deployed EAR on upgrade
-		rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
-		;;
-esac
+readonly OPERATION="${1}"
 
+stop_wildfly_service() {
+  if systemctl is-active --quiet wildfly.service; then
+    systemctl stop wildfly.service
+    echo "WildFly service stopped successfully."
+  else
+    echo "WildFly service is already stopped."
+  fi
+}
+
+remove_deployed_dwh_ear_files() {
+  local deployment_dir="/opt/wildfly/standalone/deployments"
+  rm -f "${deployment_dir}/dwh-j2ee-*"
+  echo "Removed existing DWH EAR files from ${deployment_dir}."
+}
+
+main() {
+  set -euo pipefail
+  stop_wildfly_service
+  case "$OPERATION" in
+    upgrade)
+      remove_deployed_dwh_ear_files
+      ;;
+    *)
+      echo "No action required for argument: $1"
+      ;;
+  esac
+}
+
+main "$@"
