@@ -50,7 +50,7 @@ clean_up_build_environment() {
 download_and_copy_dwh_j2ee() {
   local dir_wildfly_deployments="${1}"
 
-  mkdir -p "${DBUILD}${dir_wildfly_deployments}"
+  mkdir -p "${DIR_BUILD}${dir_wildfly_deployments}"
   if [ ! -f "${DIR_DOWNLOADS}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" ]; then
     echo "Download AKTIN DWH EAR Version ${VERSION_AKTIN_DWH_J2EE}"
     mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VERSION_AKTIN_DWH_J2EE}:ear"
@@ -82,7 +82,7 @@ download_and_copy_aktin_import_scripts() {
   mkdir -p "${DIR_BUILD}${dir_import_scripts}"
   download_p21_import_script "${DIR_DOWNLOADS}"
 
-  cp -r "${DIR_DOWNLOADS}/import-scripts" "${DIR_BUILD}${dir_import_scripts}"
+  cp -r ${DIR_DOWNLOADS}/import-scripts/* "${DIR_BUILD}${dir_import_scripts}"
 }
 
 download_p21_import_script() {
@@ -120,21 +120,21 @@ download_p21_import_script() {
 copy_sql_scripts() {
   local dir_db="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_db}")"
-  cp -r "${DIR_RESOURCES}/sql" "${DIR_BUILD}${dir_db}"
+  mkdir -p "${DIR_BUILD}${dir_db}"
+  cp -r ${DIR_RESOURCES}/sql/* "${DIR_BUILD}${dir_db}"
 }
 
 copy_sql_update_scripts() {
   local dir_db_update="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_db_update}")"
-  cp -r "${DIR_RESOURCES}/database-updates" "${DIR_BUILD}${dir_db_update}"
+  mkdir -p "${DIR_BUILD}${dir_db_update}"
+  cp -r ${DIR_RESOURCES}/database-updates/* "${DIR_BUILD}${dir_db_update}"
 }
 
 copy_wildfly_config() {
   local dir_wildfly_config="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_wildfly_config}")"
+  mkdir -p "${DIR_BUILD}${dir_wildfly_config}"
   local config_cli_template="${DIR_RESOURCES}/wildfly/config.cli"
   local config_cli_processed="${DIR_BUILD}${dir_wildfly_config}/aktin_config.cli"
 

@@ -37,8 +37,8 @@ prepare_package_environment() {
   copy_apache2_proxy_config "/etc/apache2/conf-available" "localhost"
   copy_aktin_properties "/etc/aktin"
   download_and_copy_aktin_import_scripts "/var/lib/aktin/import-scripts"
-  copy_sql_scripts "/usr/share/${PACKAGE}/database"
-  copy_sql_update_scripts "/usr/share/${PACKAGE}/database-update"
+  copy_sql_scripts "/usr/share/${PACKAGE}/sql"
+  copy_sql_update_scripts "/usr/share/${PACKAGE}/database-updates"
   copy_wildfly_config "/opt/wildfly/bin"
 }
 
