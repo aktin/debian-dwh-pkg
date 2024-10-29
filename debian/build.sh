@@ -45,20 +45,19 @@ prepare_package_environment() {
 prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
-  # Replace placeholders in the control file
-  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" -e "s/__I2B2_PACKAGE_DEPENDENCY__/${PACKAGE_I2B2}" -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
-
-  # Prepare .deb management scripts and control files
-  sed -e "s/__I2B2_SHARED__/$(echo "${PACKAGE}" | awk -F '-' '{print $1"-"$2}')/g" -e "s/__PACKAGE__/${PACKAGE}/g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
+  # Replace placeholders
+  sed -e "s|__PACKAGE__|${PACKAGE}|g" -e "s|__VERSION__|${VERSION}|g" -e "s|__I2B2_PACKAGE_DEPENDENCY__|${PACKAGE_I2B2}|g" -e "s|__POSTGRESQL_VERSION__|${POSTGRESQL_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  local shared_package_name=$(echo "${PACKAGE}" | awk -F '-' '{print $1"-"$2}')
+  sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
+  sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/config" > "${DIR_BUILD}/DEBIAN/config"
 
   # Copy necessary scripts
-  cp "${DIR_CURRENT}/config" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/postinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
   # Process the postrm script by inserting SQL drop statements
-  sed -e "/^__AKTIN_DROP__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+  sed -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
   chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
 }
 

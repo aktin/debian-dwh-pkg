@@ -51,14 +51,14 @@ download_and_copy_dwh_j2ee() {
   local dir_wildfly_deployments="${1}"
 
   mkdir -p "${DIR_BUILD}${dir_wildfly_deployments}"
-  if [ ! -f "${DIR_DOWNLOADS}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" ]; then
-    echo "Download AKTIN DWH EAR Version ${VERSION_AKTIN_DWH_J2EE}"
-    mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${VERSION_AKTIN_DWH_J2EE}:ear"
+  if [ ! -f "${DIR_DOWNLOADS}/dwh-j2ee-${AKTIN_DWH_VERSION}.ear" ]; then
+    echo "Download AKTIN DWH EAR Version ${AKTIN_DWH_VERSION}"
+    mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${AKTIN_DWH_VERSION}:ear"
     # dirty
-    cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${VERSION_AKTIN_DWH_J2EE}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" "${DIR_DOWNLOADS}"
+    cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${AKTIN_DWH_VERSION}/dwh-j2ee-${AKTIN_DWH_VERSION}.ear" "${DIR_DOWNLOADS}"
   fi
 
-  cp "${DIR_DOWNLOADS}/dwh-j2ee-${VERSION_AKTIN_DWH_J2EE}.ear" "${DIR_BUILD}${dir_wildfly_deployments}"
+  cp "${DIR_DOWNLOADS}/dwh-j2ee-${AKTIN_DWH_VERSION}.ear" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
 copy_apache2_proxy_config() {
@@ -139,5 +139,5 @@ copy_wildfly_config() {
   local config_cli_processed="${DIR_BUILD}${dir_wildfly_config}/aktin_config.cli"
 
   # Replace the placeholder in the config.cli file
-  sed "s/__POSTGRES_JDBC_VERSION__/${VERSION_POSTGRES_JDBC}/g" "${config_cli_template}" > "${config_cli_processed}"
+  sed "s/__POSTGRES_JDBC_VERSION__/${POSTGRES_JDBC_VERSION}/g" "${config_cli_template}" > "${config_cli_processed}"
 }

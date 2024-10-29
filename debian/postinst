@@ -76,12 +76,12 @@ wait_for_psql_connection() {
 }
 
 init_and_seed_aktin_database() {
-  if [[ $(eval "$PSQL -l" | grep "aktin" | wc -l) == 0 ]]; then
+  if [[ $(eval "${PSQL} -l" | grep "aktin" | wc -l) == 0 ]]; then
     echo "Seeding i2b2 database with aktin data ..."
-    eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database/addon_i2b2metadata.i2b2.sql" >/dev/null
-    eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
+    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/addon_i2b2metadata.i2b2.sql" >/dev/null
+    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
     echo "Creating aktin database and user ..."
-    eval "$PSQL -v ON_ERROR_STOP=1 -f /usr/share/$DPKG_MAINTSCRIPT_PACKAGE/database/aktin_postgres_init.sql" >/dev/null
+    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/aktin_postgres_init.sql" >/dev/null
   else
     echo -e "aktin database already exists. Skipping ..."
   fi

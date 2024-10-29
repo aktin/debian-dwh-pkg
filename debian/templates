@@ -1,37 +1,37 @@
-Template: __I2B2_SHARED__/db_conn
+Template: __SHARED_PACKAGE__/db_conn
 Type: select
 Choices: unix, tcp
 Default: unix
-Description: Connect via local unix socket or TCP/IP?
+Description: Choose the method to connect to your PostgreSQL server.
 
-Template: __I2B2_SHARED__/db_host
+Template: __SHARED_PACKAGE__/db_host
 Type: string
 Default: localhost
-Description: What ist the hostname of your PostgreSQL Server?
+Description: Enter the hostname or IP address of your PostgreSQL server.
 
-Template: __I2B2_SHARED__/db_port
+Template: __SHARED_PACKAGE__/db_port
 Type: string
 Default: 5432
-Description: On which port does your PostgreSQL Server listen?
+Description: Specify the port number your PostgreSQL server is using.
 
-Template: __I2B2_SHARED__/db_user
+Template: __SHARED_PACKAGE__/db_user
 Type: string
-Default: localhost
-Description: What ist the user for your PostgreSQL Server?
- The user must have privileges to add users and databases.
+Default: postgres
+Description: Enter the username that has the necessary privileges to add users and
+ create databases.
 
-Template: __I2B2_SHARED__/db_pass
+Template: __SHARED_PACKAGE__/db_pass
 Type: password
-Default: localhost
-Description: What ist the password for your PostgreSQL Server?
+Description: Provide the password for the specified PostgreSQL user.
 
-Template: __PACKAGE__/dis_apache2_proxy_http
+Template: __SHARED_PACKAGE__/dis_apache2_proxy_http
 Type: select
 Choices: Yes, No
 Default: Yes
-Description: Do you want to disable it now?
- During installation the apache2 proxy_http module was enabled.
+Description: Would you like to disable the apache2 proxy_http module?
+ The apache2 proxy_http module was enabled during installation. Choose "Yes"
+ to disable it now, or "No" to leave it enabled.
  .
- WARNING: There might be other services which might need this module.
+ WARNING: Disabling this module may impact other services that rely on it.
  .
- You can re-enable it with `sudo a2enmod proxy_http`
+ You can re-enable it later with the command: `sudo a2enmod proxy_http`.

@@ -8,6 +8,8 @@
 #               or upgrade, and backs up the existing aktin properties file if upgrading.
 #--------------------------------------
 
+readonly OPERATION="${1}"
+
 backup_aktin_properties() {
   local path_properties="/etc/aktin/aktin.properties"
   if [[ -f "$path_properties" ]]; then
@@ -19,7 +21,7 @@ backup_aktin_properties() {
 
 main() {
   set -euo pipefail
-  case "$1" in
+  case "$OPERATION" in
     upgrade)
       backup_aktin_properties
       ;;
