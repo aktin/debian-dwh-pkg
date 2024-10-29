@@ -1,6 +1,6 @@
 services:
   database:
-    image: ${DWHIMAGENAMESPACE}database
+    image: ${IMAGE_NAMESPACE}-database
     build: build/database
     volumes:
       - ./pgdata:/var/lib/postgresql/data
@@ -11,10 +11,10 @@ services:
       timeout: 1s
       retries: 120
   httpd:
-    image: ${DWHIMAGENAMESPACE}httpd
+    image: ${IMAGE_NAMESPACE}-httpd
     build: build/httpd
   wildfly:
-    image: ${DWHIMAGENAMESPACE}wildfly
+    image: ${IMAGE_NAMESPACE}-wildfly
     build: build/wildfly
     depends_on:
       database:

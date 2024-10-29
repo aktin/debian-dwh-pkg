@@ -1,10 +1,27 @@
-FROM __BASEIMAGE__
-COPY ./sql/addon_i2b2metadata.i2b2.sql /sql.d/10_i2b2_addon_metadata.sql
-COPY ./sql/addon_i2b2crcdata.concept_dimension.sql /sql.d/11_i2b2_addon_crcdata.sql
-COPY ./sql/database-update/01_convert_zipcodes_to_str.sql /sql.d/20_convert_zipcodes_to_str.sql
-COPY ./sql/aktin_postgres_init.sql /sql.d/30_aktin_init.sql
-COPY ./sql/aktin_postgres_drop.sql /sql.d/aktin_drop.sql
-RUN cat /sql.d/10_i2b2_addon_metadata.sql >> /docker-entrypoint-initdb.d/init.sql
-RUN cat /sql.d/11_i2b2_addon_crcdata.sql >> /docker-entrypoint-initdb.d/init.sql
-RUN cat /sql.d/20_convert_zipcodes_to_str.sql >> /docker-entrypoint-initdb.d/init.sql
-RUN cat /sql.d/30_aktin_init.sql >> /docker-entrypoint-initdb.d/init.sql
+# --------------------------------------
+# Dockerfile for PostgreSQL with i2b2 and AKTIN Database Initialization
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         29 Oct 24
+# Purpose:      Dockerfile to initialize a PostgreSQL database with i2b2 and AKTIN schemas and data, including custom SQL scripts for
+#               setup and updates.
+# --------------------------------------
+
+FROM __BASE_IMAGE__
+
+LABEL maintainer="AKTIN IT <it-support@aktin.org>"
+
+# Copy SQL scripts into directory for custom SQL scripts
+COPY ./sql/*sql /sql.d/
+
+# Concatenate custom SQL scripts into a single initialization script
+RUN cat /sql.d/addon_i2b2crcdata.concept_dimension.sql \
+        /sql.d/addon_i2b2metadata.sql \
+        /sql.d/01_convert_zipcodes_to_str.sql \
+        /sql.d/02_add_missing_p21_dates.sql \
+        /sql.d/aktin_init.sql >> /docker-entrypoint-initdb.d/init.sql && \
+    rm /sql.d/addon_i2b2crcdata.concept_dimension.sql \
+       /sql.d/addon_i2b2metadata.sql \
+       /sql.d/01_convert_zipcodes_to_str.sql \
+       /sql.d/02_add_missing_p21_dates.sql \
+       /sql.d/aktin_init.sql

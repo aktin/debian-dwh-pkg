@@ -48,7 +48,7 @@ prepare_wildfly_docker() {
   sed -e "s|__BASE_IMAGE__|${BASE_IMAGE_NAMESPACE}-wildfly|g" "${DIR_CURRENT}/wildfly/Dockerfile" >"${DIR_BUILD}/wildfly/Dockerfile"
   download_and_copy_dwh_j2ee "/wildfly"
   copy_aktin_properties "/wildfly"
-  download_and_copy_aktin_import_scripts "/wildfly"
+  download_and_copy_aktin_import_scripts "/wildfly/import-scripts"
   copy_wildfly_config "/wildfly"
 }
 
@@ -109,8 +109,8 @@ main() {
   prepare_wildfly_docker
   prepare_postgresql_docker
   prepare_apache2_docker
-  #clean_up_old_docker_images
-  #build_docker_images
+  clean_up_old_docker_images
+  build_docker_images
 }
 
 main
