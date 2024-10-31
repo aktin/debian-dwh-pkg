@@ -5,4 +5,3 @@
 DROP DATABASE IF EXISTS aktin;
 
 DROP USER IF EXISTS aktin;
-
