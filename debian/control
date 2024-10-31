@@ -1,5 +1,5 @@
-Package: __PACKAGE__
-Version: __VERSION__
+Package: __PACKAGE_NAME__
+Version: __PACKAGE_VERSION__
 Section: science
 Priority: optional
 Architecture: all
@@ -19,14 +19,9 @@ Depends:
   python3-zipp,
   python3-plotly,
   python3-gunicorn
-Recommends: postgresql-__POSTGRESQL_VERSION__
+Recommends: postgresql
 Maintainer: AKTIN IT <it-support@aktin.org>
 Homepage: https://www.aktin.org/
-Description: AKTIN Emergency Department Data Warehouse Package
- This package installs and configures he AKTIN Emergency Department Data Warehouse.
- It includes:
-  - The AKTIN DWH for data processing and data sharing operations of ED data.
-  - Python scripts for importing and processing ED data.
-  - R packages for data analysis and visualization using tidyverse and other packages.
-  - Integration with the i2b2 framework for data storage and retrieval.
- .
+Description: AKTIN Emergency Department Data Warehouse (DWH) Package
+ This package installs and configures the AKTIN Emergency Department Data Warehouse
+ (DWH) on top of the AKTIN I2B2 installation.
