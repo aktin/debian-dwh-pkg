@@ -1,3 +1,6 @@
+# The PostgreSQL JDBC driver version is dynamically detected from the existing WildFly deployments (provided by the aktin-notaufnahme-i2b2 package).
+# Placeholders in this file will be replaced during installation to match the detected JDBC version.
+
 # Start an embedded server for offline manipulation of the standalone.xml configuration file
 embed-server
 
