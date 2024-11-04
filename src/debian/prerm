@@ -1,38 +1,53 @@
 #!/bin/bash
 #--------------------------------------
-# Script Name:  prerm.sh
-# Version:      1.0
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         29 Oct 24
-# Purpose:      Pre-removal script for 'aktin'. Stops the WildFly service and removes the current deployed DWH EAR files during an upgrade.
+# Script Name:  prerm
+# Version:      1.1
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         04 Nov 24
+# Purpose:      Pre-removal script that handles WildFly service shutdown and cleanup of DWH deployment files during package upgrades.
 #--------------------------------------
 
 readonly OPERATION="${1}"
 
-stop_wildfly_service() {
-  if systemctl is-active --quiet wildfly.service; then
-    systemctl stop wildfly.service
-    echo "WildFly service stopped successfully."
-  else
-    echo "WildFly service is already stopped."
+stop_wildfly() {
+  echo "Stopping WildFly service..."
+  if ! systemctl is-active --quiet wildfly; then
+    echo "Service not running"
+    return 0
   fi
+
+  systemctl stop wildfly
+  local count=0
+  local max_wait=30
+  while systemctl is-active --quiet wildfly; do
+    if ((count >= max_wait)); then
+      echo "Error: Service stop timeout after ${max_wait}s" >&2
+      return 1
+    fi
+    sleep 1
+    ((count++))
+  done
 }
 
-remove_deployed_dwh_ear_files() {
-  local deployment_dir="/opt/wildfly/standalone/deployments"
-  rm -f "${deployment_dir}/dwh-j2ee-*"
-  echo "Removed existing DWH EAR files from ${deployment_dir}."
+cleanup_j2ee_deployments() {
+  echo "Cleaning up deployments..."
+  if ! compgen -G "${WILDFLY_DEPLOYMENTS}/dwh-j2ee-*" > /dev/null; then
+    echo "No deployments found"
+    return 0
+  fi
+  rm -f "${WILDFLY_DEPLOYMENTS}"/dwh-j2ee-*
 }
 
 main() {
   set -euo pipefail
-  stop_wildfly_service
   case "$OPERATION" in
-    upgrade)
-      remove_deployed_dwh_ear_files
+    remove)
+      # Runs during package removal before files are deleted.
       ;;
-    *)
-      echo "No action required for argument: $1"
+    upgrade)
+      # Runs during package upgrade before installation of new package.
+      stop_wildfly
+      cleanup_j2ee_deployments
       ;;
   esac
 }

@@ -156,7 +156,7 @@ prepare_management_scripts_and_files() {
 
   # Copy necessary scripts
   cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
-  #cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
+  cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
   # Process the postrm script by inserting SQL drop statements
   #sed -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
