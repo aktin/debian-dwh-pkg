@@ -1,30 +1,4 @@
-Template: __SHARED_PACKAGE__/db_conn
-Type: select
-Choices: unix, tcp
-Default: unix
-Description: Choose the method to connect to your PostgreSQL server.
-
-Template: __SHARED_PACKAGE__/db_host
-Type: string
-Default: localhost
-Description: Enter the hostname or IP address of your PostgreSQL server.
-
-Template: __SHARED_PACKAGE__/db_port
-Type: string
-Default: 5432
-Description: Specify the port number your PostgreSQL server is using.
-
-Template: __SHARED_PACKAGE__/db_user
-Type: string
-Default: postgres
-Description: Enter the username that has the necessary privileges to add users and
- create databases.
-
-Template: __SHARED_PACKAGE__/db_pass
-Type: password
-Description: Provide the password for the specified PostgreSQL user.
-
-Template: __SHARED_PACKAGE__/dis_apache2_proxy_http
+Template: __PACKAGE_NAME__/dis_apache2_proxy_http
 Type: select
 Choices: Yes, No
 Default: Yes

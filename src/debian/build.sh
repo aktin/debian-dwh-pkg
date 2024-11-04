@@ -13,7 +13,7 @@ set -euo pipefail
 readonly PACKAGE_NAME="aktin-notaufnahme-dwh"
 readonly I2B2_PACKAGE_NAME="$(echo "${PACKAGE_NAME}" | awk -F '-' '{print $1"-"$2"-i2b2"}')"
 
-# Determine package version from environment or first argument
+# Determine PACKAGE_VERSION: Use environment variable or first script argument
 readonly PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
 if [[ -z "${PACKAGE_VERSION}" ]]; then
   echo "Error: PACKAGE_VERSION is not specified." >&2
@@ -51,11 +51,12 @@ init_build_environment() {
 download_and_copy_dwh_j2ee() {
   local dir_wildfly_deployments="${1}"
   local ear_file="dwh-j2ee-${AKTIN_DWH_VERSION}.ear"
-  echo "Downloading and copying DWH J2EE application..."
+  echo "Downloading DWH application..."
 
   mkdir -p "${DIR_BUILD}${dir_wildfly_deployments}"
-  if [[ ! -f "${DIR_DOWNLOADS}/${ear_file}" ]]; then
-    echo "Downloading AKTIN DWH EAR Version ${AKTIN_DWH_VERSION}."
+  if [[ -f "${DIR_DOWNLOADS}/${ear_file}" ]]; then
+    echo "Using cached DWH EAR"
+  else
     mvn dependency:get -DremoteRepositories="https://www.aktin.org/software/repo/" -Dartifact="org.aktin.dwh:dwh-j2ee:${AKTIN_DWH_VERSION}:ear"
     # dirty
     cp ~/".m2/repository/org/aktin/dwh/dwh-j2ee/${AKTIN_DWH_VERSION}/${ear_file}" "${DIR_DOWNLOADS}"
@@ -63,11 +64,9 @@ download_and_copy_dwh_j2ee() {
 
   cp "${DIR_DOWNLOADS}/${ear_file}" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
-
 copy_apache2_proxy_config() {
   local dir_apache2_conf="${1}"
-  echo "Copying Apache2 proxy configuration..."
-
+  echo "Copying Apache proxy configuration..."
   mkdir -p "${DIR_BUILD}${dir_apache2_conf}"
   cp "${DIR_RESOURCES}/httpd/aktin-j2ee-reverse-proxy.conf" "${DIR_BUILD}${dir_apache2_conf}"
 }
@@ -75,7 +74,6 @@ copy_apache2_proxy_config() {
 copy_aktin_properties() {
   local dir_aktin_properties="${1}"
   echo "Copying AKTIN properties..."
-
   mkdir -p "${DIR_BUILD}${dir_aktin_properties}"
   cp "${DIR_RESOURCES}/aktin.properties" "${DIR_BUILD}${dir_aktin_properties}"
 }
@@ -95,7 +93,7 @@ download_p21_import_script() {
   if [[ -z "${latest_tag}" ]]; then
      echo "Error: Failed to fetch latest tag from GitHub" >&2
      return 1
-   fi
+  fi
   # Construct the URL for the latest tag version of p21import.py
   local github_p21_url="https://raw.githubusercontent.com/aktin/p21-script/v${latest_tag}/src/p21import.py"
   local github_version="$(curl -s "${github_p21_url}" | grep '^# @VERSION=' | sed 's/^# @VERSION=//')"
@@ -117,50 +115,41 @@ download_p21_import_script() {
 download_and_copy_aktin_import_scripts() {
   local dir_import_scripts="${1}"
   echo "Preparing AKTIN import scripts..."
-
   mkdir -p "${DIR_BUILD}${dir_import_scripts}"
   download_p21_import_script "${DIR_DOWNLOADS}"
-
   cp "${DIR_DOWNLOADS}"/import-scripts/* "${DIR_BUILD}${dir_import_scripts}"
 }
 
 copy_sql_scripts() {
   local dir_db="${1}"
   echo "Copying SQL scripts..."
-
   mkdir -p "${DIR_BUILD}${dir_db}"
-  cp "${DIR_RESOURCES}"/sql/* "${DIR_BUILD}${dir_db}"
+  cp -r "${DIR_RESOURCES}/sql/"* "${DIR_BUILD}${dir_db}"
 }
 
 copy_wildfly_config() {
   local dir_wildfly_config="${1}"
   echo "Copying WildFly configuration..."
-
   mkdir -p "${DIR_BUILD}${dir_wildfly_config}"
   cp "${DIR_RESOURCES}/wildfly/aktin_config.cli" "${DIR_BUILD}${dir_wildfly_config}"
 }
 
-# TODO what is need from i2b2 package
-# TODO config from maintainer script
-# TODO templates from maintainer script
-# TODO helper.sh
 prepare_management_scripts_and_files() {
-  echo "Preparing management and control files for the Debian package..."
+  echo "Preparing Debian package management files..."
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${I2B2_PACKAGE_NAME}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
   sed -e "s|__I2B2_PACKAGE_NAME__|${I2B2_PACKAGE_NAME}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
-  #sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
-  #sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/config" > "${DIR_BUILD}/DEBIAN/config"
 
   # Copy necessary scripts
   cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
   # Process the postrm script by inserting SQL drop statements
-  #sed -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
-  #chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
+  sed -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+  chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
 }
 
 build_package() {
