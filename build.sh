@@ -17,7 +17,5 @@ if [[ -z "${VERSION}" ]]; then
   exit 1
 fi
 
-# Define the root directory of the script
-readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-
-source "${DIR_ROOT}/debian/build.sh" "${VERSION}"
+dir_current="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${dir_current}/debian/build.sh" "${VERSION}"

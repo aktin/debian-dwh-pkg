@@ -9,7 +9,5 @@
 
 set -euo pipefail
 
-# Define the root directory of the script
-readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-
-rm -rf "${DIR_ROOT}/debian/build"
+dir_current="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+rm -rf "${dir_current}/debian/build"
