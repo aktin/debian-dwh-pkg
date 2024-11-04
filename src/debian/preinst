@@ -11,12 +11,12 @@ readonly OPERATION="${1}"
 readonly AKTIN_PROPERTIES="/etc/aktin/aktin.properties"
 
 backup_aktin_properties() {
-    if [[ ! -f "${AKTIN_PROPERTIES}" ]]; then
-        return 0
-    fi
-    local backup_file="${AKTIN_PROPERTIES%.*}_$(date +%Y%m%d_%H%M).${AKTIN_PROPERTIES##*.}"
-    cp -f "${AKTIN_PROPERTIES}" "${backup_file}"
-    echo "Backed up ${AKTIN_PROPERTIES} to ${backup_file}"
+  if [[ ! -f "${AKTIN_PROPERTIES}" ]]; then
+    return 0
+  fi
+  local backup_file="${AKTIN_PROPERTIES%.*}_$(date +%Y%m%d_%H%M).${AKTIN_PROPERTIES##*.}"
+  cp -f "${AKTIN_PROPERTIES}" "${backup_file}"
+  echo "Backed up ${AKTIN_PROPERTIES} to ${backup_file}"
 }
 
 main() {
