@@ -11,12 +11,16 @@ readonly OPERATION="${1}"
 
 backup_aktin_properties() {
   local path_aktin_properties="/etc/aktin/aktin.properties"
+  echo "Backing up AKTIN configuration..."
   if [[ ! -f "${path_aktin_properties}" ]]; then
+    echo "No configuration found to backup"
     return 0
   fi
   local path_backup="${path_aktin_properties%.*}_$(date +%Y%m%d_%H%M).${path_aktin_properties##*.}"
-  cp -f "${path_aktin_properties}" "${path_backup}"
-  echo "Backed up ${path_aktin_properties} to ${path_backup}"
+  if ! cp -f "${path_aktin_properties}" "${path_backup}"; then
+    echo "Error: Failed to create backup at ${path_backup}" >&2
+    return 1
+  fi
 }
 
 main() {
