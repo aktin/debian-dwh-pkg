@@ -133,3 +133,28 @@ main() {
 }
 
 main "$@"
+
+
+: '
+#!/bin/bash
+# Define paths
+WILDFLY_DEPLOYMENTS="/opt/wildfly/standalone/deployments"
+CLI_FILE="/path/to/aktin_config.cli"
+
+# Step 1: Check for the JDBC driver in the deployments directory
+jdbc_driver=$(ls "${WILDFLY_DEPLOYMENTS}"/postgresql-*.jar 2>/dev/null | head -n 1)
+
+if [[ -z "${jdbc_driver}" ]]; then
+    echo "Error: PostgreSQL JDBC driver not found in ${WILDFLY_DEPLOYMENTS}."
+    exit 1
+fi
+
+# Extract version from the filename (e.g., postgresql-42.2.18.jar -> 42.2.18)
+jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
+
+# Step 2: Replace placeholder in aktin_config.cli
+sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${CLI_FILE}"
+
+# Step 3: Apply the configuration using jboss-cli
+/opt/wildfly/bin/jboss-cli.sh --file="${CLI_FILE}"
+'
