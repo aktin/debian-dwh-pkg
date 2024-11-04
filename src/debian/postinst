@@ -1,160 +1,138 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  postinst
-# Version:      1.0
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         29 Oct 24
-# Purpose:      Post-installation script for 'aktin'. This script configures services, restores settings from backups if available,
-#               initializes and seeds the AKTIN database, configures the Apache reverse proxy, and deploys the datasource in WildFly.
+# Version:      1.1
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         04 Nove 24
+# Purpose:      Post-installation script that configures AKTIN DWH by setting up Apache proxy, managing database, configuring WildFly, and handling
+#               import scripts.
 #--------------------------------------
 
 readonly OPERATION="${1}"
+readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
+readonly AKTIN_PROPERTIES="/etc/aktin/aktin.properties"
 
-restore_aktin_properties_from_backup() {
-  local path_properties="/etc/aktin/aktin.properties"
-  if [[ $(ls /etc/aktin/ | grep -c "backup_*") -gt 0 ]]; then
-    local backup_newest
-    backup_newest=$(ls -t /etc/aktin/backup_* | head -1)
-    # iterate through all rows in backup, split each row into
-    # key-value by '=', overwrite value in aktin.properties with
-    # backup if found
-    while read -r line_backup; do
-      if [[ ! $line_backup = \#* && -n $line_backup ]]; then
-        local key="${line_backup%=*}"
-        local value="${line_backup#*=}"
-        sed -i "s|${key}=.*|${key}=${value}|" "$path_properties"
-      fi
-    done < "$backup_newest"
+restore_aktin_properties() {
+  echo "Checking for aktin.properties backup..."
+  local backups=(/etc/aktin/backup_*.properties)
+
+  if [[ -f "${backups[0]}" ]]; then
+    local newest_backup="$(ls -t "${backups[@]}" | head -1)"
+    echo "Restoring settings from ${newest_backup}"
+    while IFS= read -r line; do
+      [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+      local key="${line%%=*}"
+      local value="${line#*=}"
+      sed -i "s|^${key}=.*|${key}=${value}|" "${AKTIN_PROPERTIES}"
+    done < "${newest_backup}"
   fi
 }
 
-create_symlink_for_aktin_properties() {
+setup_aktin_properties() {
+  echo "Setting up AKTIN properties..."
   chown -R wildfly:wildfly /etc/aktin
-  ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
+  ln -sf "${AKTIN_PROPERTIES}" /opt/wildfly/standalone/configuration/
 }
 
-configure_apache2_reverse_proxy() {
-  echo "Enabling apache2 proxy_http module ..."
+configure_apache() {
+  echo "Configuring Apache reverse proxy..."
   a2enmod proxy_http >/dev/null || true
   a2enconf aktin-j2ee-reverse-proxy >/dev/null || true
-  echo "Restarting apache2 ..."
-  systemctl restart apache2.service
+
+  echo "Restarting Apache..."
+  systemctl restart apache2
 }
 
-connect_to_psql() {
-  . /usr/share/debconf/confmodule
-  local debconf_name
-  debconf_name=$(echo "$DPKG_MAINTSCRIPT_PACKAGE" | awk -F '-' '{print $1"-"$2}')
-
-  db_get "${debconf_name}/db_conn"
-  if [ "$RET" = "unix" ]; then
-    readonly PSQL="sudo -u postgres psql"
-    echo "Connecting to postgres via local unix socket."
-  else
-    db_get "${debconf_name}/db_host"; local host="$RET"
-    db_get "${debconf_name}/db_port"; local port="$RET"
-    db_get "${debconf_name}/db_user"; local user="$RET"
-    db_get "${debconf_name}/db_pass"; local pass="$RET"
-    readonly PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
-    echo "Connecting to postgres via TCP/IP to $host:$port."
+# Source helper script from i2b2 package for database operations
+source_i2b2_helper() {
+  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: Required i2b2 helper script not found at ${helper_path}" >&2
+    exit 1
   fi
-}
-
-wait_for_psql_connection() {
-  local waitcount=0
-  while ! systemctl start postgresql 2>/dev/null; do
-    if [ "$waitcount" -lt 12 ]; then
-      echo "Database not yet installed. Waiting ..."
-      waitcount=$((waitcount + 1))
-      sleep 5
-    else
-      echo "Database not yet installed. Aborting ..."
-      exit 1
-    fi
-  done
-  systemctl enable postgresql.service
+  source "${helper_path}"
 }
 
 init_and_seed_aktin_database() {
-  if [[ $(eval "${PSQL} -l" | grep "aktin" | wc -l) == 0 ]]; then
-    echo "Seeding i2b2 database with aktin data ..."
-    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/addon_i2b2metadata.i2b2.sql" >/dev/null
-    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
-    echo "Creating aktin database and user ..."
-    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/aktin_postgres_init.sql" >/dev/null
+  source_i2b2_helper
+  connect_to_psql
+  wait_for_psql_connection
+  echo "Setting up AKTIN database..."
+  if [[ $(eval "${PSQL} -l" | grep -c "aktin") -eq 0 ]]; then
+    echo "Seeding i2b2 database with AKTIN metadata..."
+    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2metadata.i2b2.sql" >/dev/null
+    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
+
+    echo "Creating AKTIN database and user..."
+    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/aktin_postgres_init.sql" >/dev/null
   else
-    echo -e "aktin database already exists. Skipping ..."
+    echo "AKTIN database already exists, skipping initialization..."
   fi
 }
 
 apply_database_updates() {
-  for sqlfile in /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database-update/*; do
-    eval "$PSQL -d i2b2 -v ON_ERROR_STOP=1 -f $sqlfile" >/dev/null
-  done
+  source_i2b2_helper
+  connect_to_psql
+  wait_for_psql_connection
+  echo "Applying database updates..."
+  local updates=(/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/update_*.sql)
+  if [[ -f "${updates[0]}" ]]; then
+    for update in "${updates[@]}"; do
+      echo "Applying update: $(basename "${update}")"
+      eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f ${update}" >/dev/null
+    done
+  else
+    echo "No database updates found"
+  fi
 }
 
 # update files uploaded with old p21 scripts to newest script id
-update_p21_script_references() {
-  if [[ -n $(ls /var/lib/aktin/import 2>/dev/null) ]]; then
-    for folder in /var/lib/aktin/import/*; do
+update_p21_script_refs() {
+  echo "Updating P21 script references..."
+  local import_dir="/var/lib/aktin/import"
+  if [[ -n $(ls "${import_dir}" 2>/dev/null) ]]; then
+    for folder in "${import_dir}"/*; do
       sed -i "s|script=p21.*|script=p21|" "$folder/properties"
     done
   fi
 }
 
-# deploy aktin datasource
+# deploy AKTIN datasource for installed postgresql jdbc driver
 configure_wildfly() {
-  /opt/wildfly/bin/jboss-cli.sh --file=/opt/wildfly/bin/aktin_config.cli
+  echo "Applying WildFly configuration..."
+  local jdbc_driver
+  jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
+  if [[ -z "${jdbc_driver}" ]]; then
+    echo "Error: PostgreSQL JDBC driver not found" >&2
+    exit 1
+  fi
+
+  # Extract version from the filename (e.g., postgresql-42.2.18.jar -> 42.2.18)
+  local jdbc_version
+  jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
+
+  # Replace placeholder in aktin_config.cli and apply config
+  local cli_file="/opt/wildfly/bin/aktin_config.cli"
+  sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${cli_file}"
+  /opt/wildfly/bin/jboss-cli.sh --file="${cli_file}"
 }
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
     configure)
-      restore_aktin_properties_from_backup
-      create_symlink_for_aktin_properties
-      configure_apache2_reverse_proxy
-      connect_to_postgresql
-      wait_for_postgresql_connection
-      initialize_aktin_database
+      # Runs during installation/upgrade after files have been unpacked.
+      restore_aktin_properties
+      setup_aktin_properties
+      configure_apache
+      init_and_seed_aktin_database
       apply_database_updates
-      update_p21_script_references
+      update_p21_script_refs
       configure_wildfly
-      systemctl restart wildfly.service
-      ;;
-    abort-remove)
-      systemctl enable wildfly.service || true
-      systemctl start wildfly.service || true
-      ;;
-    upgrade)
-      # Future upgrade steps can be added here
+      echo "Restarting WildFly..."
+      systemctl restart wildfly
       ;;
   esac
 }
 
 main "$@"
-
-
-: '
-#!/bin/bash
-# Define paths
-WILDFLY_DEPLOYMENTS="/opt/wildfly/standalone/deployments"
-CLI_FILE="/path/to/aktin_config.cli"
-
-# Step 1: Check for the JDBC driver in the deployments directory
-jdbc_driver=$(ls "${WILDFLY_DEPLOYMENTS}"/postgresql-*.jar 2>/dev/null | head -n 1)
-
-if [[ -z "${jdbc_driver}" ]]; then
-    echo "Error: PostgreSQL JDBC driver not found in ${WILDFLY_DEPLOYMENTS}."
-    exit 1
-fi
-
-# Extract version from the filename (e.g., postgresql-42.2.18.jar -> 42.2.18)
-jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-
-# Step 2: Replace placeholder in aktin_config.cli
-sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${CLI_FILE}"
-
-# Step 3: Apply the configuration using jboss-cli
-/opt/wildfly/bin/jboss-cli.sh --file="${CLI_FILE}"
-'
