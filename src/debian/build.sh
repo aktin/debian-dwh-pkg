@@ -149,12 +149,12 @@ prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
-  #sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_DEPENDENCY__|${I2B2_PACKAGE_DEPENDENCY}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_DEPENDENCY__|${I2B2_PACKAGE_DEPENDENCY}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
   #sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
   #sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/config" > "${DIR_BUILD}/DEBIAN/config"
 
   # Copy necessary scripts
-  #cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
+  cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
   #cp "${DIR_CURRENT}/postinst" "${DIR_BUILD}/DEBIAN/"
   #cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 

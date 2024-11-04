@@ -1,28 +1,32 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  preinst
-# Version:      1.0
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         29 Oct 24
-# Purpose:      Pre-installation script for 'aktin'. This script stops the WildFly service to prepare for package installation
-#               or upgrade, and backs up the existing aktin properties file if upgrading.
+# Version:      1.1
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         04 Nov 24
+# Purpose:      Pre-installation script that backs up aktin.properties during upgrades.
 #--------------------------------------
 
 readonly OPERATION="${1}"
+readonly AKTIN_PROPERTIES="/etc/aktin/aktin.properties"
 
 backup_aktin_properties() {
-  local path_properties="/etc/aktin/aktin.properties"
-  if [[ -f "$path_properties" ]]; then
-    local backup_path="/etc/aktin/backup_$(date +%Y_%m_%d_%H%M).properties"
-    cp -f "$path_properties" "$backup_path"
-    echo "Backup of aktin.properties created at $backup_path"
-  fi
+    if [[ ! -f "${AKTIN_PROPERTIES}" ]]; then
+        return 0
+    fi
+    local backup_file="${AKTIN_PROPERTIES%.*}_$(date +%Y%m%d_%H%M).${AKTIN_PROPERTIES##*.}"
+    cp -f "${AKTIN_PROPERTIES}" "${backup_file}"
+    echo "Backed up ${AKTIN_PROPERTIES} to ${backup_file}"
 }
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
+    install)
+      # Runs during installation before files have been unpacked.
+      ;;
     upgrade)
+      # Runs during package upgrade before files have been unpacked.
       backup_aktin_properties
       ;;
   esac
