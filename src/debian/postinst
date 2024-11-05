@@ -12,30 +12,15 @@ readonly OPERATION="${1}"
 readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
 readonly AKTIN_PROPERTIES="/etc/aktin/aktin.properties"
 
-check_and_start_services() {
-  local services=("apache2" "postgresql" "wildfly")
-  local max_retries=5
-  local retry_delay=5
-  echo "Starting required services..."
-
-  for service in "${services[@]}"; do
-    if systemctl is-active --quiet "${service}"; then
-      continue
-    fi
-
-    for ((i=1; i<=max_retries; i++)); do
-      systemctl start "${service}"
-      sleep "${retry_delay}"
-      if systemctl is-active --quiet "${service}"; then
-        break
-      fi
-      if [ "$i" -eq "$max_retries" ]; then
-        echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
-        exit 1
-      fi
-      echo "Retry ${i}/${max_retries} for ${service}"
-    done
-  done
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  echo "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
+    return 1
+  fi
+  source "${helper_path}"
 }
 
 restore_aktin_properties() {
@@ -69,19 +54,7 @@ configure_apache() {
   systemctl restart apache2
 }
 
-# Source helper script from i2b2 package for database operations
-source_i2b2_helper() {
-  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
-  echo "Loading i2b2 helper script..."
-  if [[ ! -f "${helper_path}" ]]; then
-    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
-    return 1
-  fi
-  source "${helper_path}"
-}
-
 init_and_seed_aktin_database() {
-  source_i2b2_helper
   connect_to_psql
   wait_for_psql_connection
   echo "Initializing AKTIN database..."
@@ -96,7 +69,6 @@ init_and_seed_aktin_database() {
 
 # TODO: Version tracking which updates have already been applied
 apply_database_updates() {
-  source_i2b2_helper
   connect_to_psql
   wait_for_psql_connection
   echo "Checking for database updates..."
@@ -125,6 +97,7 @@ update_p21_script_refs() {
   fi
 }
 
+# TODO: Duplicate code with triggered/restore_and_configure_wildfly()
 # deploy AKTIN datasource for installed postgresql jdbc driver
 configure_wildfly() {
   local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
@@ -147,6 +120,7 @@ main() {
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked.
+      source_i2b2_helper
       check_and_start_services
       restore_aktin_properties
       setup_aktin_properties

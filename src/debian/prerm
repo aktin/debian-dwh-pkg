@@ -9,24 +9,15 @@
 
 readonly OPERATION="${1}"
 
-stop_wildfly() {
-  echo "Stopping WildFly service..."
-  if ! systemctl is-active --quiet wildfly; then
-    echo "Service not running"
-    return 0
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  echo "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
+    return 1
   fi
-
-  systemctl stop wildfly
-  local count=0
-  local max_wait=30
-  while systemctl is-active --quiet wildfly; do
-    if ((count >= max_wait)); then
-      echo "Error: Service stop timeout after ${max_wait}s" >&2
-      return 1
-    fi
-    sleep 1
-    ((count++))
-  done
+  source "${helper_path}"
 }
 
 cleanup_j2ee_deployments() {
@@ -47,6 +38,7 @@ main() {
       ;;
     upgrade)
       # Runs during package upgrade before installation of new package.
+      source_i2b2_helper
       stop_wildfly
       cleanup_j2ee_deployments
       ;;

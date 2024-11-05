@@ -10,6 +10,17 @@
 readonly OPERATION="${1}"
 readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
 
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  echo "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
+    return 1
+  fi
+  source "${helper_path}"
+}
+
 disable_apache_reverse_proxy_config() {
   echo "Removing Apache proxy configuration..."
   a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
@@ -50,17 +61,6 @@ purge_aktin_files() {
   rm -rf /var/lib/aktin
 }
 
-# Source helper script from i2b2 package for database operations
-source_i2b2_helper() {
-  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
-  echo "Loading i2b2 helper script..."
-  if [[ ! -f "${helper_path}" ]]; then
-    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
-    return 1
-  fi
-  source "${helper_path}"
-}
-
 drop_aktin_database() {
   echo "Removing AKTIN database..."
   if ! command -v psql >/dev/null 2>&1 || ! systemctl is-active --quiet postgresql; then
@@ -68,7 +68,6 @@ drop_aktin_database() {
     return 0
   fi
 
-  source_i2b2_helper
   connect_to_psql
   wait_for_psql_connection
   if [[ $(eval "${PSQL} -l" | grep "aktin" | wc -l) -gt 1 ]]; then
@@ -92,6 +91,7 @@ main() {
       ;;
     purge)
       # Runs during a purge after 'postrm remove' to delete all leftover files.
+      source_i2b2_helper
       purge_aktin_files
       drop_aktin_database
       ;;
