@@ -18,7 +18,7 @@ backup_aktin_properties() {
     echo "No configuration found to backup"
     return 0
   fi
-  local path_backup="${path_aktin_properties%.*}_$(date +%Y%m%d_%H%M).${path_aktin_properties##*.}"
+  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
   if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
     echo "Error: Failed to create backup at ${path_backup}" >&2
     return 1

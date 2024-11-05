@@ -94,6 +94,7 @@ init_and_seed_aktin_database() {
   fi
 }
 
+# TODO: Version tracking which updates have already been applied
 apply_database_updates() {
   source_i2b2_helper
   connect_to_psql
