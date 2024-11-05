@@ -1,16 +1,24 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  postrm
-# Version:      1.0
+# Version:      1.1
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         29 Oct 24
-# Purpose:      Post-removal script for 'aktin'. This script handles the removal and purging of configurations for Apache and PostgreSQL,
-#               disabling Apache modules as needed and removing WildFly deployments.
+# Date:         04 Nov 24
+# Purpose:      Post-removal script that cleans up AKTIN DWH configurations, deployments, and database during remove/purge operations.
 #--------------------------------------
 
 readonly OPERATION="${1}"
+readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
 
-disable_apache_proxy_http() {
+disable_apache_reverse_proxy_config() {
+  echo "Removing Apache proxy configuration..."
+  a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
+  rm -f /etc/apache2/conf-available/aktin-j2ee-reverse-proxy.conf
+  systemctl restart apache2 || true
+}
+
+ask_for_disabling_proxy_http_module() {
+  echo "Checking proxy module status..."
   . /usr/share/debconf/confmodule
   db_input high "$DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http" || true
   db_go || true
@@ -18,76 +26,77 @@ disable_apache_proxy_http() {
   db_get "$DPKG_MAINTSCRIPT_PACKAGE/dis_apache2_proxy_http"
 
   if [ "$RET" = "Yes" ]; then
-    echo "Disabling Apache2 proxy_http module..."
     a2dismod proxy_http >/dev/null || true
+    systemctl restart apache2 || true
   fi
-
-  a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
-  systemctl restart apache2.service || true
 }
 
 remove_wildfly_deployments() {
+  echo "Cleaning up WildFly deployments..."
   rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
-  echo "Removed WildFly DWH deployments."
+  rm -f /opt/wildfly/standalone/configuration/aktin.properties
 }
 
-connect_to_psql() {
-  . /usr/share/debconf/confmodule
-  local debconf_name
-  debconf_name=$(echo "$DPKG_MAINTSCRIPT_PACKAGE" | awk -F '-' '{print $1"-"$2}')
+remove_aktin_files() {
+  echo "Removing AKTIN properties and AKTIN import scripts..."
+  rm -f /etc/aktin/aktin.properties
+  rm -rf /var/lib/aktin/import-scripts
+}
 
-  db_get "${debconf_name}/db_conn"
-  if [ "$RET" = "unix" ]; then
-    readonly PSQL="sudo -u postgres psql"
-    echo "Connecting to postgres via local unix socket."
-  else
-    db_get "${debconf_name}/db_host"; local host="$RET"
-    db_get "${debconf_name}/db_port"; local port="$RET"
-    db_get "${debconf_name}/db_user"; local user="$RET"
-    db_get "${debconf_name}/db_pass"; local pass="$RET"
-    readonly PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
-    echo "Connecting to postgres via TCP/IP to $host:$port."
+purge_aktin_files() {
+  echo "Purging AKTIN properties backups and AKTIN files..."
+  rm -rf /etc/aktin
+  rm -rf /var/lib/aktin
+}
+
+# Source helper script from i2b2 package for database operations
+source_i2b2_helper() {
+  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  echo "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
+    return 1
   fi
-}
-
-wait_for_psql_connection() {
-  local waitcount=0
-  while ! systemctl start postgresql 2>/dev/null; do
-    if [ "$waitcount" -lt 12 ]; then
-      echo "Database not yet installed. Waiting ..."
-      waitcount=$((waitcount + 1))
-      sleep 5
-    else
-      echo "Database not yet installed. Aborting ..."
-      exit 1
-    fi
-  done
-  systemctl enable postgresql.service
+  source "${helper_path}"
 }
 
 drop_aktin_database() {
-  echo "Dropping i2b2 PostgreSQL database and user..."
-  eval "${PSQL} -v ON_ERROR_STOP=1" <<EOF >/dev/null
-__AKTIN_DROP_STATEMENT__
+  echo "Removing AKTIN database..."
+  if ! command -v psql >/dev/null 2>&1 || ! systemctl is-active --quiet postgresql; then
+    echo "PostgreSQL not available"
+    return 0
+  fi
 
+  source_i2b2_helper
+  connect_to_psql
+  wait_for_psql_connection
+  if [[ $(eval "${PSQL} -l" | grep "aktin" | wc -l) -gt 1 ]]; then
+    eval "${PSQL} -v ON_ERROR_STOP=1" <<EOF >/dev/null
+__AKTIN_DROP_STATEMENT__
 EOF
+  else
+    echo "Database already removed"
+  fi
 }
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
     remove)
-      disable_apache_proxy_http
+      # Runs during package removal after files have been deleted.
+      disable_apache_reverse_proxy_config
+      ask_for_disabling_proxy_http_module
       remove_wildfly_deployments
+      remove_aktin_files
       ;;
     purge)
+      # Runs during a purge after 'postrm remove' to delete all leftover files.
+      purge_aktin_files
       drop_aktin_database
       ;;
   esac
-
-  # Start WildFly service after completion
-  systemctl start wildfly.service 2> /dev/null || true
-  echo "WildFly service started."
+  echo "Restarting WildFly..."
+  systemctl restart wildfly
 }
 
 main "$@"
