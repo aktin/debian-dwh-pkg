@@ -4,35 +4,38 @@
 # Start an embedded server for offline manipulation of the standalone.xml configuration file
 embed-server
 
-# Add a new datasource named AktinDS with specified configuration parameters
-data-source add --name=AktinDS \
-    --jndi-name=java:/jboss/datasources/AktinDS \
-    --driver-name=postgresql-__POSTGRES_JDBC_VERSION__.jar \
-    --driver-class=org.postgresql.Driver \
-    --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/aktin \
-    --user-name=aktin \
-    --password=aktin \
-    --jta=false \
-    --use-ccm=false
+# Check if the AktinDS datasource already exists
+if (outcome != success) of /subsystem=datasources/data-source=AktinDS:read-resource
+  # Add a new datasource named AktinDS with specified configuration parameters
+  data-source add --name=AktinDS \
+      --jndi-name=java:/jboss/datasources/AktinDS \
+      --driver-name=postgresql-__POSTGRES_JDBC_VERSION__.jar \
+      --driver-class=org.postgresql.Driver \
+      --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/aktin \
+      --user-name=aktin \
+      --password=aktin \
+      --jta=false \
+      --use-ccm=false
 
-# Configure validation and statement settings for AKTIN datasource (same configuration as i2b2 datasources)
-# Disable validation on match to improve performance
-/subsystem=datasources/data-source=AktinDS:write-attribute(name=validate-on-match,value=false)
+  # Configure validation and statement settings for AKTIN datasource (same configuration as i2b2 datasources)
+  # Disable validation on match to improve performance
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=validate-on-match,value=false)
 
-# Enable background validation to check connections periodically
-/subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation,value=true)
+  # Enable background validation to check connections periodically
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation,value=true)
 
-# Set background validation interval to 60000 milliseconds (1 minute)
-/subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation-millis,value=60000)
+  # Set background validation interval to 60000 milliseconds (1 minute)
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation-millis,value=60000)
 
-# Enable fast fail to fail quickly if a connection is invalid
-/subsystem=datasources/data-source=AktinDS:write-attribute(name=use-fast-fail,value=true)
+  # Enable fast fail to fail quickly if a connection is invalid
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=use-fast-fail,value=true)
 
-# Set SQL query used to validate connections
-/subsystem=datasources/data-source=AktinDS:write-attribute(name=check-valid-connection-sql,value="SELECT 1")
+  # Set SQL query used to validate connections
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=check-valid-connection-sql,value="SELECT 1")
 
-# Disable shared prepared statements
-/subsystem=datasources/data-source=AktinDS:write-attribute(name=share-prepared-statements, value=false)
+  # Disable shared prepared statements
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=share-prepared-statements, value=false)
+end-if
 
 # Stop the embedded server to save changes and exit
 stop-embedded-server
