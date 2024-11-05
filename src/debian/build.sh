@@ -142,6 +142,8 @@ prepare_management_scripts_and_files() {
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/triggers" > "${DIR_BUILD}/DEBIAN/triggers"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/triggered" > "${DIR_BUILD}/DEBIAN/triggered"
 
   # Copy necessary scripts
   cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"

@@ -1,0 +1,11 @@
+# Trigger handling for WildFly updates from i2b2 package
+#
+# These triggers ensure DWH components survive WildFly updates by:
+# 1. Backing up the DWH application (EAR) and configuration before WildFly update
+# 2. Restoring and reconfiguring them after the update
+#
+# The backup trigger runs before i2b2 package removes the old WildFly
+# The restore trigger runs after i2b2 package configures the new WildFly
+
+interest-await __I2B2_PACKAGE_NAME__/backup
+interest-await __I2B2_PACKAGE_NAME__/restore
