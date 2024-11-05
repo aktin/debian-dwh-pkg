@@ -30,12 +30,13 @@ stop_wildfly() {
 }
 
 cleanup_j2ee_deployments() {
+  local dir_wildfly_deployments="/opt/wildfly/standalone/deployments"
   echo "Cleaning up deployments..."
-  if ! compgen -G "${WILDFLY_DEPLOYMENTS}/dwh-j2ee-*" > /dev/null; then
+  if ! compgen -G "${dir_wildfly_deployments}/dwh-j2ee-*" > /dev/null; then
     echo "No deployments found"
     return 0
   fi
-  rm -f "${WILDFLY_DEPLOYMENTS}"/dwh-j2ee-*
+  rm -f "${dir_wildfly_deployments}"/dwh-j2ee-*
 }
 
 main() {

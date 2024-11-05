@@ -9,6 +9,8 @@
 
 readonly OPERATION="${1}"
 
+# Backs up aktin.properties by moving it with a timestamped name. Using `mv` instead of `cp` removes the original file, so `dpkg` won’t detect
+# a modified configuration during upgrades. This ensures the new version installs without prompting, while preserving the old file as a backup.
 backup_aktin_properties() {
   local path_aktin_properties="/etc/aktin/aktin.properties"
   echo "Backing up AKTIN configuration..."
@@ -17,7 +19,7 @@ backup_aktin_properties() {
     return 0
   fi
   local path_backup="${path_aktin_properties%.*}_$(date +%Y%m%d_%H%M).${path_aktin_properties##*.}"
-  if ! cp -f "${path_aktin_properties}" "${path_backup}"; then
+  if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
     echo "Error: Failed to create backup at ${path_backup}" >&2
     return 1
   fi

@@ -9,7 +9,6 @@
 
 set -euo pipefail
 
-# Verify if a version is specified as an argument
 readonly VERSION="${1:-}"
 if [[ -z "${VERSION}" ]]; then
   echo "Error: VERSION is not specified." >&2

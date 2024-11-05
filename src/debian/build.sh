@@ -11,7 +11,6 @@
 set -euo pipefail
 
 readonly PACKAGE_NAME="aktin-notaufnahme-dwh"
-readonly I2B2_PACKAGE_NAME="$(echo "${PACKAGE_NAME}" | awk -F '-' '{print $1"-"$2"-i2b2"}')"
 
 # Determine PACKAGE_VERSION: Use environment variable or first script argument
 readonly PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
@@ -135,20 +134,21 @@ copy_wildfly_config() {
 }
 
 prepare_management_scripts_and_files() {
+  local i2b2_package_name="$(echo "${PACKAGE_NAME}" | awk -F '-' '{print $1"-"$2"-i2b2"}')"
   echo "Preparing Debian package management files..."
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
-  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${I2B2_PACKAGE_NAME}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
-  sed -e "s|__I2B2_PACKAGE_NAME__|${I2B2_PACKAGE_NAME}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
 
   # Copy necessary scripts
   cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
   # Process the postrm script by inserting SQL drop statements
-  sed -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
   chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
 }
 

@@ -39,8 +39,8 @@ check_and_start_services() {
 }
 
 restore_aktin_properties() {
-  echo "Restoring AKTIN configuration..."
   local backups=(/etc/aktin/backup_*.properties)
+  echo "Restoring AKTIN configuration..."
 
   if [[ ! -f "${backups[0]}" ]]; then
     echo "No backup found"
@@ -71,8 +71,8 @@ configure_apache() {
 
 # Source helper script from i2b2 package for database operations
 source_i2b2_helper() {
-  echo "Loading i2b2 helper script..."
   local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  echo "Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
     echo "Error: i2b2 helper script not found at ${helper_path}" >&2
     return 1
@@ -113,8 +113,8 @@ apply_database_updates() {
 
 # update files uploaded with old p21 scripts to newest script id
 update_p21_script_refs() {
-  echo "Updating import script references..."
   local import_dir="/var/lib/aktin/import"
+  echo "Updating import script references..."
   if [[ -n $(ls "${import_dir}" 2>/dev/null) ]]; then
     for folder in "${import_dir}"/*; do
       sed -i "s|script=p21.*|script=p21|" "$folder/properties"
@@ -126,18 +126,15 @@ update_p21_script_refs() {
 
 # deploy AKTIN datasource for installed postgresql jdbc driver
 configure_wildfly() {
+  local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
   echo "Configuring WildFly datasource..."
-  local jdbc_driver
-  jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
 
   if [[ -z "${jdbc_driver}" ]]; then
     echo "Error: PostgreSQL JDBC driver not found" >&2
     return 1
   fi
 
-  local jdbc_version
-  jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-
+  local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
   local cli_file="/opt/wildfly/bin/aktin_config.cli"
   sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${cli_file}"
   /opt/wildfly/bin/jboss-cli.sh --file="${cli_file}"
