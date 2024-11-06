@@ -12,12 +12,17 @@ set -euo pipefail
 
 readonly PACKAGE_NAME="aktin-notaufnahme-dwh"
 
-# Determine PACKAGE_VERSION: Use environment variable or first script argument
+# Validate and set package version from environment variable or first argument
+# Exit with error if version is missing or doesn't start with a number
 readonly PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
 if [[ -z "${PACKAGE_VERSION}" ]]; then
-  echo "Error: PACKAGE_VERSION is not specified." >&2
-  echo "Usage: $0 <PACKAGE_VERSION>"
-  exit 1
+    echo "Error: PACKAGE_VERSION is not specified." >&2
+    echo "Usage: $0 <PACKAGE_VERSION>" >&2
+    exit 1
+elif ! [[ "${PACKAGE_VERSION}" =~ ^[0-9] ]]; then
+    echo "Error: PACKAGE_VERSION must start with a number." >&2
+    echo "Example: 1.0.0, 2.1.0-rc1" >&2
+    exit 1
 fi
 
 # Define relevant directories as absolute paths
@@ -145,13 +150,15 @@ prepare_management_scripts_and_files() {
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/triggers" > "${DIR_BUILD}/DEBIAN/triggers"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/triggered" > "${DIR_BUILD}/DEBIAN/triggered"
 
+  # Process the postrm script by inserting SQL drop statements
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+
   # Copy necessary scripts
   cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
-  # Process the postrm script by inserting SQL drop statements
-  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
-  chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
+  # Set proper executable permissions
+  chmod 0755 "${DIR_BUILD}/DEBIAN/"*
 }
 
 build_package() {
