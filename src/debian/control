@@ -3,8 +3,7 @@ Version: __PACKAGE_VERSION__
 Section: science
 Priority: optional
 Architecture: all
-Depends: __I2B2_PACKAGE_NAME__, r-base-core, r-cran-lattice, r-cran-xml, r-cran-tidyverse, python3, python3-pandas, python3-numpy, python3-requests, python3-sqlalchemy, python3-psycopg2, python3-postgresql, python3-zipp, python3-plotly, python3-gunicorn
-Recommends: postgresql
+Depends: __I2B2_PACKAGE_NAME__, python3, r-base-core, r-cran-lattice, r-cran-tidyverse, r-cran-xml, python3-numpy, python3-pandas, python3-plotly, python3-postgresql, python3-psycopg2, python3-requests, python3-sqlalchemy, python3-gunicorn, python3-zipp
 Maintainer: AKTIN IT <it-support@aktin.org>
 Homepage: https://www.aktin.org/
 Description: AKTIN Emergency Department Data Warehouse (DWH) Package

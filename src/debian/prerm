@@ -39,7 +39,7 @@ main() {
     upgrade)
       # Runs during package upgrade before installation of new package.
       source_i2b2_helper
-      stop_wildfly
+      stop_service "wildfly"
       cleanup_j2ee_deployments
       ;;
   esac

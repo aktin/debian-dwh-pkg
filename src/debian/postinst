@@ -41,7 +41,7 @@ restore_aktin_properties() {
   done < "${newest_backup}"
 }
 
-setup_aktin_properties() {
+configure_aktin_properties() {
   echo "Configuring AKTIN properties..."
   chown -R wildfly:wildfly /etc/aktin
   ln -sf "${AKTIN_PROPERTIES}" /opt/wildfly/standalone/configuration/
@@ -121,14 +121,16 @@ main() {
     configure)
       # Runs during installation/upgrade after files have been unpacked.
       source_i2b2_helper
-      check_and_start_services
-      restore_aktin_properties
-      setup_aktin_properties
+      check_and_start_service "apache2"
       configure_apache
+      check_and_start_service "postgresql"
       init_and_seed_aktin_database
       apply_database_updates
-      update_p21_script_refs
+      check_and_start_service "wildfly"
+      restore_aktin_properties
+      configure_aktin_properties
       configure_wildfly
+      update_p21_script_refs
       echo "Restarting WildFly..."
       systemctl restart wildfly
       ;;
