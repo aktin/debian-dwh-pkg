@@ -1,43 +1,51 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  prerm
-# Version:      1.1
+# Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         04 Nov 24
+# Date:         08 Nov 24
 # Purpose:      Pre-removal script that handles WildFly service shutdown and cleanup of DWH deployment files during package upgrades.
 #--------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
 
 # Source helper script from i2b2 package
 source_i2b2_helper() {
   local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
-  echo "Loading i2b2 helper script..."
+  log_info "Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    echo "Error: i2b2 helper script not found at ${helper_path}" >&2
+    log_error "i2b2 helper script not found at ${helper_path}"
     return 1
   fi
   source "${helper_path}"
+  log_success "Helper script loaded"
 }
 
 cleanup_j2ee_deployments() {
   local dir_wildfly_deployments="/opt/wildfly/standalone/deployments"
-  echo "Cleaning up deployments..."
+  log_info "Cleaning up deployments..."
+
   if ! compgen -G "${dir_wildfly_deployments}/dwh-j2ee-*" > /dev/null; then
-    echo "No deployments found"
+    log_warn "No deployments found"
     return 0
   fi
   rm -f "${dir_wildfly_deployments}"/dwh-j2ee-*
+  log_success "Deployments cleaned up"
 }
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
     remove)
-      # Runs during package removal before files are deleted.
+      # Runs during package removal before files are deleted
       ;;
     upgrade)
-      # Runs during package upgrade before installation of new package.
+      # Runs during package upgrade before installation of new package
       source_i2b2_helper
       stop_service "wildfly"
       cleanup_j2ee_deployments
