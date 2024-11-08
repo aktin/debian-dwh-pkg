@@ -1,11 +1,16 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  preinst
-# Version:      1.1
+# Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         04 Nov 24
+# Date:         08 Nov 24
 # Purpose:      Pre-installation script that backs up aktin.properties during upgrades.
 #--------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
 
@@ -13,26 +18,27 @@ readonly OPERATION="${1}"
 # a modified configuration during upgrades. This ensures the new version installs without prompting, while preserving the old file as a backup.
 backup_aktin_properties() {
   local path_aktin_properties="/etc/aktin/aktin.properties"
-  echo "Backing up AKTIN configuration..."
+  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
+  log_info "Backing up AKTIN configuration..."
   if [[ ! -f "${path_aktin_properties}" ]]; then
-    echo "No configuration found to backup"
+    log_warn "No configuration found to backup"
     return 0
   fi
-  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
   if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
-    echo "Error: Failed to create backup at ${path_backup}" >&2
+    log_error "Failed to create backup at ${path_backup}"
     return 1
   fi
+  log_success "Configuration backed up to ${path_backup}"
 }
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
     install)
-      # Runs during installation before files have been unpacked.
+      # Runs during installation before files have been unpacked
       ;;
     upgrade)
-      # Runs during package upgrade before files have been unpacked.
+      # Runs during package upgrade before files have been unpacked
       backup_aktin_properties
       ;;
   esac
