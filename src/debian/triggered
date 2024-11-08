@@ -1,72 +1,85 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  triggered
-# Version:      1.0
+# Version:      1.1
 # Authors:      akombeiz@ukaachen.de
-# Date:         05 Nov 24
+# Date:         08 Nov 24
 # Purpose:      Handles backup and restore of DWH artifacts during WildFly updates. Gets triggered by the i2b2 package before and after WildFly
 #               updates to ensure DWH components survive the update process.
 #--------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
 readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
 readonly BACKUP_DIR="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}/wildfly"
 
 backup_wildfly_artifacts() {
-  echo "Backing up WildFly artifacts..."
+  log_info "Backing up WildFly artifacts..."
   mkdir -p "${BACKUP_DIR}"
 
   # Backup EAR file if exists
   if compgen -G "/opt/wildfly/standalone/deployments/dwh-j2ee-*.ear" > /dev/null; then
-    echo "Backing up DWH application (EAR)"
+    log_info "Backing up DWH application (EAR)"
     cp -f /opt/wildfly/standalone/deployments/dwh-j2ee-*.ear "${BACKUP_DIR}/"
   else
-    echo "Warning: No DWH application (EAR) found to backup"
+    log_warn "No DWH application (EAR) found to backup"
   fi
 
   # Backup CLI configuration if exists
   if [ -f "/opt/wildfly/bin/aktin_config.cli" ]; then
-    echo "Backing up WildFly configuration script"
+    log_info "Backing up WildFly configuration script"
     cp -f /opt/wildfly/bin/aktin_config.cli "${BACKUP_DIR}/"
   else
-    echo "Warning: No WildFly configuration script found to backup"
+    log_warn "No WildFly configuration script found to backup"
   fi
+
+  log_success "Backup completed"
 }
 
 restore_and_configure_wildfly() {
-  echo "Applying backed up WildFly artifacts..."
+  log_info "Applying backed up WildFly artifacts..."
   if [ ! -d "${BACKUP_DIR}" ]; then
-    echo "No backups found to restore"
+    log_warn "No backups found to restore"
     return 0
   fi
+
   # Restore EAR file
   if compgen -G "${BACKUP_DIR}/dwh-j2ee-*.ear" > /dev/null; then
-    echo "Restoring DWH application (EAR)"
+    log_info "Restoring DWH application (EAR)"
     cp -f "${BACKUP_DIR}"/dwh-j2ee-*.ear /opt/wildfly/standalone/deployments/
+    log_success "EAR file restored"
   fi
+
   # Restore and configure CLI script
   if [ -f "${BACKUP_DIR}/aktin_config.cli" ]; then
-    echo "Restoring and configuring WildFly datasource"
+    log_info "Restoring and configuring WildFly datasource"
     # Create temporary copy for modification
     local temp_cli=$(mktemp)
     cp -f "${BACKUP_DIR}/aktin_config.cli" /opt/wildfly/bin/
     cp -f "${BACKUP_DIR}/aktin_config.cli" "${temp_cli}"
+
     # Update JDBC version in temporary CLI file
     local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
     if [ -n "${jdbc_driver}" ]; then
-      echo "Configuring datasource with current JDBC driver"
+      log_info "Configuring datasource with current JDBC driver"
       local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
       sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${temp_cli}"
       /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
+      log_success "Datasource configured"
     else
-      echo "Error: No PostgreSQL JDBC driver found" >&2
+      log_error "No PostgreSQL JDBC driver found"
     fi
-    # Cleanup
     rm -f "${temp_cli}"
   fi
+
   # Cleanup backup directory
-  echo "Cleaning up backup directory"
+  log_info "Cleaning up backup directory"
   rm -rf "${BACKUP_DIR}"
+  log_success "Restore completed"
 }
 
 main() {
