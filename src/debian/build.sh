@@ -147,7 +147,6 @@ prepare_management_scripts_and_files() {
 
   # Replace placeholders
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
-  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/prerm" > "${DIR_BUILD}/DEBIAN/prerm"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/preinst" > "${DIR_BUILD}/DEBIAN/preinst"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
