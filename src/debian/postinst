@@ -13,12 +13,10 @@ log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
 log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
-readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
-readonly AKTIN_PROPERTIES="/etc/aktin/aktin.properties"
 
 # Source helper script from i2b2 package
 source_i2b2_helper() {
-  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
   log_info "Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
     log_error "i2b2 helper script not found at ${helper_path}"
@@ -77,7 +75,7 @@ restore_aktin_properties() {
     [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
     local key="${line%%=*}"
     local value="${line#*=}"
-    sed -i "s|^${key}=.*|${key}=${value}|" "${AKTIN_PROPERTIES}"
+    sed -i "s|^${key}=.*|${key}=${value}|" /etc/aktin/aktin.properties
   done < "${newest_backup}"
   log_success "Configuration restored from ${newest_backup}"
 }
@@ -85,7 +83,7 @@ restore_aktin_properties() {
 configure_aktin_properties() {
   log_info "Configuring AKTIN properties..."
   chown -R wildfly:wildfly /etc/aktin
-  ln -sf "${AKTIN_PROPERTIES}" /opt/wildfly/standalone/configuration/
+  ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
   log_success "Properties configured"
 }
 

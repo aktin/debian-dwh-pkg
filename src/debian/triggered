@@ -14,7 +14,6 @@ log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
 log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
-readonly I2B2_PACKAGE_NAME="__I2B2_PACKAGE_NAME__"
 readonly BACKUP_DIR="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}/wildfly"
 
 backup_wildfly_artifacts() {
@@ -85,11 +84,11 @@ restore_and_configure_wildfly() {
 main() {
   set -euo pipefail
   case "$OPERATION" in
-    "${I2B2_PACKAGE_NAME}/backup")
+    __TRIGGER_PREFIX__-backup)
       # Before WildFly update
       backup_wildfly_artifacts
       ;;
-    "${I2B2_PACKAGE_NAME}/restore")
+    __TRIGGER_PREFIX__-restore)
       # After WildFly update
       restore_and_configure_wildfly
       ;;

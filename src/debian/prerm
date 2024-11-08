@@ -16,7 +16,7 @@ readonly OPERATION="${1}"
 
 # Source helper script from i2b2 package
 source_i2b2_helper() {
-  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
   log_info "Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
     log_error "i2b2 helper script not found at ${helper_path}"

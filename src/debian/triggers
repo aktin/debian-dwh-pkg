@@ -7,5 +7,5 @@
 # The backup trigger runs before i2b2 package removes the old WildFly
 # The restore trigger runs after i2b2 package configures the new WildFly
 
-interest-await __I2B2_PACKAGE_NAME__/backup
-interest-await __I2B2_PACKAGE_NAME__/restore
+interest-await __TRIGGER_PREFIX__-backup
+interest-await __TRIGGER_PREFIX__-restore
