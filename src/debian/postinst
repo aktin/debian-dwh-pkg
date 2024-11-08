@@ -3,9 +3,8 @@
 # Script Name:  postinst
 # Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         08 Nove 24
-# Purpose:      Post-installation script that configures AKTIN DWH by setting up Apache proxy, managing database, configuring WildFly, and handling
-#               import scripts.
+# Date:         08 Nov 24
+# Purpose:      Configures the package after files are unpacked by initializing services, databases, and required configurations to make the package operational.
 #--------------------------------------
 
 log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
@@ -91,10 +90,9 @@ configure_aktin_properties() {
 }
 
 # TODO: Duplicate code with triggered/restore_and_configure_wildfly()
-# deploy AKTIN datasource for installed postgresql jdbc driver
-configure_wildfly() {
+add_aktin_datasource() {
   local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
-  log_info "Configuring WildFly datasource..."
+  log_info "Configuring AKTIN datasource for Wildfly..."
 
   if [ -n "${jdbc_driver}" ]; then
     local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
@@ -102,19 +100,12 @@ configure_wildfly() {
     local cli_file="/opt/wildfly/bin/aktin_config.cli"
     sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${temp_cli}"
     /opt/wildfly/bin/jboss-cli.sh --file="${cli_file}"
-    log_success "WildFly datasource configured"
+    log_success "AKTIN datasource configured"
   else
     log_error "No PostgreSQL JDBC driver found"
   fi
   # Cleanup
   rm -f "${temp_cli}"
-}
-
-set_wildfly_permissions() {
-  log_info "Setting up Wildfly user permissions..."
-  chown -R wildfly:wildfly /opt/wildfly
-  chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
-  log_success "WildFly user permissions set"
 }
 
 # update files uploaded with old p21 scripts to newest script id
@@ -132,25 +123,29 @@ update_p21_script_refs() {
   fi
 }
 
+# TODO change to thrown trigger for i2b2 package
+set_wildfly_permissions() {
+  log_info "Setting up Wildfly user permissions..."
+  chown -R wildfly:wildfly /opt/wildfly
+  chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
+  log_success "WildFly user permissions set"
+}
+
 main() {
   set -euo pipefail
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked
       source_i2b2_helper
-      check_and_start_service "apache2"
       configure_apache
-      check_and_start_service "postgresql"
       init_and_seed_aktin_database
       apply_database_updates
-      stop_service "wildfly"
       restore_aktin_properties
       configure_aktin_properties
-      configure_wildfly
+      add_aktin_datasource
       update_p21_script_refs
       set_wildfly_permissions
       check_and_start_service "wildfly"
-      systemctl restart wildfly
       ;;
   esac
 }
