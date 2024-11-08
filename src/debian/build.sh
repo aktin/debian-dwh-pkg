@@ -51,6 +51,13 @@ init_build_environment() {
   fi
 }
 
+copy_apache2_proxy_config() {
+  local dir_apache2_conf="${1}"
+  echo "Copying Apache proxy configuration..."
+  mkdir -p "${DIR_BUILD}${dir_apache2_conf}"
+  cp "${DIR_RESOURCES}/httpd/aktin-j2ee-reverse-proxy.conf" "${DIR_BUILD}${dir_apache2_conf}"
+}
+
 #TODO fix this
 download_and_copy_dwh_j2ee() {
   local dir_wildfly_deployments="${1}"
@@ -67,19 +74,6 @@ download_and_copy_dwh_j2ee() {
   fi
 
   cp "${DIR_DOWNLOADS}/${ear_file}" "${DIR_BUILD}${dir_wildfly_deployments}"
-}
-copy_apache2_proxy_config() {
-  local dir_apache2_conf="${1}"
-  echo "Copying Apache proxy configuration..."
-  mkdir -p "${DIR_BUILD}${dir_apache2_conf}"
-  cp "${DIR_RESOURCES}/httpd/aktin-j2ee-reverse-proxy.conf" "${DIR_BUILD}${dir_apache2_conf}"
-}
-
-copy_aktin_properties() {
-  local dir_aktin_properties="${1}"
-  echo "Copying AKTIN properties..."
-  mkdir -p "${DIR_BUILD}${dir_aktin_properties}"
-  cp "${DIR_RESOURCES}/aktin.properties" "${DIR_BUILD}${dir_aktin_properties}"
 }
 
 download_p21_import_script() {
@@ -124,11 +118,11 @@ download_and_copy_aktin_import_scripts() {
   cp "${DIR_DOWNLOADS}"/import-scripts/* "${DIR_BUILD}${dir_import_scripts}"
 }
 
-copy_sql_scripts() {
-  local dir_db="${1}"
-  echo "Copying SQL scripts..."
-  mkdir -p "${DIR_BUILD}${dir_db}"
-  cp -r "${DIR_RESOURCES}/sql/"* "${DIR_BUILD}${dir_db}"
+copy_aktin_properties() {
+  local dir_aktin_properties="${1}"
+  echo "Copying AKTIN properties..."
+  mkdir -p "${DIR_BUILD}${dir_aktin_properties}"
+  cp "${DIR_RESOURCES}/aktin.properties" "${DIR_BUILD}${dir_aktin_properties}"
 }
 
 copy_wildfly_config() {
@@ -136,6 +130,13 @@ copy_wildfly_config() {
   echo "Copying WildFly configuration..."
   mkdir -p "${DIR_BUILD}${dir_wildfly_config}"
   cp "${DIR_RESOURCES}/wildfly/aktin_config.cli" "${DIR_BUILD}${dir_wildfly_config}"
+}
+
+copy_sql_scripts() {
+  local dir_db="${1}"
+  echo "Copying SQL scripts..."
+  mkdir -p "${DIR_BUILD}${dir_db}"
+  cp -r "${DIR_RESOURCES}/sql/"* "${DIR_BUILD}${dir_db}"
 }
 
 prepare_management_scripts_and_files() {
@@ -171,12 +172,12 @@ main() {
   set -euo pipefail
   clean_up_build_environment
   init_build_environment
-  download_and_copy_dwh_j2ee "/opt/wildfly/standalone/deployments"
   copy_apache2_proxy_config "/etc/apache2/conf-available"
-  copy_aktin_properties "/etc/aktin"
+  download_and_copy_dwh_j2ee "/opt/wildfly/standalone/deployments"
   download_and_copy_aktin_import_scripts "/var/lib/aktin/import-scripts"
-  copy_sql_scripts "/usr/share/${PACKAGE_NAME}/sql"
+  copy_aktin_properties "/etc/aktin"
   copy_wildfly_config "/opt/wildfly/bin"
+  copy_sql_scripts "/usr/share/${PACKAGE_NAME}/sql"
   prepare_management_scripts_and_files
   build_package
 }
