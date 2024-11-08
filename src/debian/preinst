@@ -4,7 +4,7 @@
 # Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         08 Nov 24
-# Purpose:      Pre-installation script that backs up aktin.properties during upgrades.
+# Purpose:      Prepares the system before new package files are unpacked by validating requirements, backing up configs, and ensuring prerequisites are met.
 #--------------------------------------
 
 log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
@@ -14,32 +14,30 @@ log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
 
-# Backs up aktin.properties by moving it with a timestamped name. Using `mv` instead of `cp` removes the original file, so `dpkg` won’t detect
-# a modified configuration during upgrades. This ensures the new version installs without prompting, while preserving the old file as a backup.
-backup_aktin_properties() {
-  local path_aktin_properties="/etc/aktin/aktin.properties"
-  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
-  log_info "Backing up AKTIN configuration..."
-  if [[ ! -f "${path_aktin_properties}" ]]; then
-    log_warn "No configuration found to backup"
-    return 0
-  fi
-  if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
-    log_error "Failed to create backup at ${path_backup}"
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/${I2B2_PACKAGE_NAME}/helper.sh"
+  log_info "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    log_error "i2b2 helper script not found at ${helper_path}"
     return 1
   fi
-  log_success "Configuration backed up to ${path_backup}"
+  source "${helper_path}"
+  log_success "Helper script loaded"
 }
 
 main() {
   set -euo pipefail
+  source_i2b2_helper
+  check_and_start_service "postgresql"
+  check_and_start_service "apache2"
   case "$OPERATION" in
     install)
       # Runs during installation before files have been unpacked
+      stop_service "wildfly"
       ;;
     upgrade)
       # Runs during package upgrade before files have been unpacked
-      backup_aktin_properties
       ;;
   esac
 }
