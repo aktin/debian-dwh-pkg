@@ -57,18 +57,18 @@ restore_and_configure_wildfly() {
   if [ -f "${BACKUP_DIR}/aktin_config.cli" ]; then
     log_info "Restoring and configuring WildFly datasource"
     # Create temporary copy for modification
-    local temp_cli=$(mktemp)
     cp -f "${BACKUP_DIR}/aktin_config.cli" /opt/wildfly/bin/
-    cp -f "${BACKUP_DIR}/aktin_config.cli" "${temp_cli}"
 
     # Update JDBC version in temporary CLI file
     local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
     if [ -n "${jdbc_driver}" ]; then
-      log_info "Configuring datasource with current JDBC driver"
+      log_info "Configuring AKTIN datasource for Wildfly..."
       local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-      sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${temp_cli}"
+      local cli_file="/opt/wildfly/bin/aktin_config.cli"
+      local temp_cli=$(mktemp)
+      sed -e "s|__POSTGRES_JDBC_VERSION__|${jdbc_version}|g" "${cli_file}" > "${temp_cli}"
       /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
-      log_success "Datasource configured"
+      log_success "AKTIN datasource configured"
     else
       log_error "No PostgreSQL JDBC driver found"
     fi

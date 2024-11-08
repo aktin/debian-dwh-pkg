@@ -38,9 +38,9 @@ init_and_seed_aktin_database() {
   connect_to_psql
   log_info "Initializing AKTIN database..."
   if [[ $(eval "${PSQL} -l" | grep -c "aktin") -eq 0 ]]; then
-    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2metadata.i2b2.sql" >/dev/null
+    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2metadata.sql" >/dev/null
     eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
-    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/aktin_postgres_init.sql" >/dev/null
+    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/aktin_init.sql" >/dev/null
     log_success "Database initialized successfully"
   else
     log_info "Database AKTIN already exists"
@@ -50,13 +50,17 @@ init_and_seed_aktin_database() {
 # TODO: Version tracking which updates have already been applied
 apply_database_updates() {
   connect_to_psql
+  local sql_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql"
+  local updates=($(find "${sql_dir}" -name "update*.sql" | sort))
   log_info "Checking for database updates..."
-  local updates=(/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/update_*.sql)
-  if [[ ! -f "${updates[0]}" ]]; then
+
+  if [[ ${#updates[@]} -eq 0 ]]; then
     log_warn "No updates available"
     return 0
   fi
   for update in "${updates[@]}"; do
+    local update_name=$(basename "$update" .sql)
+    log_info "Applying ${update_name}..."
     eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f ${update}" >/dev/null
   done
   log_success "Database updates applied"
@@ -94,10 +98,10 @@ add_aktin_datasource() {
 
   if [ -n "${jdbc_driver}" ]; then
     local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-    local temp_cli=$(mktemp)
     local cli_file="/opt/wildfly/bin/aktin_config.cli"
-    sed -i "s/__POSTGRES_JDBC_VERSION__/${jdbc_version}/g" "${temp_cli}"
-    /opt/wildfly/bin/jboss-cli.sh --file="${cli_file}"
+    local temp_cli=$(mktemp)
+    sed -e "s|__POSTGRES_JDBC_VERSION__|${jdbc_version}|g" "${cli_file}" > "${temp_cli}"
+    /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
     log_success "AKTIN datasource configured"
   else
     log_error "No PostgreSQL JDBC driver found"
@@ -125,7 +129,7 @@ update_p21_script_refs() {
 set_wildfly_permissions() {
   log_info "Setting up Wildfly user permissions..."
   chown -R wildfly:wildfly /opt/wildfly
-  chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
+  chown -R wildfly:wildfly /var/lib/aktin
   log_success "WildFly user permissions set"
 }
 
