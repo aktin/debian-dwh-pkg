@@ -29,7 +29,6 @@ source_i2b2_helper() {
 disable_apache_reverse_proxy_config() {
   log_info "Removing Apache proxy configuration..."
   a2disconf aktin-j2ee-reverse-proxy >/dev/null 2>&1 || true
-  rm -f /etc/apache2/conf-available/aktin-j2ee-reverse-proxy.conf
   systemctl restart apache2 || true
   log_success "Apache proxy configuration removed"
 }
