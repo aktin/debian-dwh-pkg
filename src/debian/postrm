@@ -60,6 +60,14 @@ remove_aktin_datasource() {
   fi
 }
 
+# TODO change to thrown trigger for i2b2 package
+set_wildfly_permissions() {
+  log_info "Setting up Wildfly user permissions..."
+  chown -R wildfly:wildfly /opt/wildfly
+  chown -R wildfly:wildfly /var/lib/aktin
+  log_success "WildFly user permissions set"
+}
+
 drop_aktin_database() {
   if ! command -v psql >/dev/null 2>&1 || ! systemctl is-active --quiet postgresql; then
     log_warn "PostgreSQL not available"
@@ -101,6 +109,7 @@ main() {
       purge_aktin_files
       ;;
   esac
+  set_wildfly_permissions
   check_and_start_service "wildfly"
 }
 
