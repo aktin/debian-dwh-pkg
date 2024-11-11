@@ -52,20 +52,12 @@ remove_aktin_datasource() {
   log_info "Removing AKTIN datasource..."
 
   if [[ -f "${temp_cli}" ]]; then
-    /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
+    sudo -u wildfly /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
     rm -f "${temp_cli}"
     log_success "Datasource removed"
   else
     log_warn "No CLI script found to remove datasource"
   fi
-}
-
-# TODO change to thrown trigger for i2b2 package
-set_wildfly_permissions() {
-  log_info "Setting up Wildfly user permissions..."
-  chown -R wildfly:wildfly /opt/wildfly
-  chown -R wildfly:wildfly /var/lib/aktin
-  log_success "WildFly user permissions set"
 }
 
 drop_aktin_database() {
@@ -109,7 +101,6 @@ main() {
       purge_aktin_files
       ;;
   esac
-  set_wildfly_permissions
   check_and_start_service "wildfly"
 }
 
