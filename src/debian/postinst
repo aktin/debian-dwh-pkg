@@ -84,11 +84,10 @@ restore_aktin_properties() {
   log_success "Configuration restored from ${newest_backup}"
 }
 
-configure_aktin_properties() {
-  log_info "Configuring AKTIN properties..."
-  chown -R wildfly:wildfly /etc/aktin
+link_properties_to_wildfly() {
+  log_info "Creating symbolic link for AKTIN properties in WildFly..."
   ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
-  log_success "Properties configured"
+  log_success "Symbolic link created in WildFly configuration directory"
 }
 
 # TODO: Duplicate code with triggered/restore_and_configure_wildfly()
@@ -143,7 +142,7 @@ main() {
       init_and_seed_aktin_database
       apply_database_updates
       restore_aktin_properties
-      configure_aktin_properties
+      link_properties_to_wildfly
       add_aktin_datasource
       update_p21_script_refs
       set_wildfly_permissions
