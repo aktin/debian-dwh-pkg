@@ -47,6 +47,19 @@ cleanup_wildfly_config_links() {
   log_success "WildFly configuration links removed"
 }
 
+remove_aktin_datasource() {
+  local temp_cli="/tmp/remove-aktin-config.cli"
+  log_info "Removing AKTIN datasource..."
+
+  if [[ -f "${temp_cli}" ]]; then
+    /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
+    rm -f "${temp_cli}"
+    log_success "Datasource removed"
+  else
+    log_warn "No CLI script found to remove datasource"
+  fi
+}
+
 drop_aktin_database() {
   if ! command -v psql >/dev/null 2>&1 || ! systemctl is-active --quiet postgresql; then
     log_warn "PostgreSQL not available"
@@ -80,7 +93,7 @@ main() {
       disable_apache_reverse_proxy_config
       notify_user_about_http_module
       cleanup_wildfly_config_links
-      remove_aktin_files
+      remove_aktin_datasource
       ;;
     purge)
       # Runs during a purge after 'postrm remove' to delete all leftover files

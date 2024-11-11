@@ -55,6 +55,19 @@ backup_aktin_properties() {
   log_success "Configuration backed up to ${path_backup}"
 }
 
+backup_config_removal_script() {
+  local cli_file="/opt/wildfly/bin/remove-aktin-config.cli"
+  local temp_cli="/tmp/remove-aktin-config.cli"
+  log_info "Backing up WildFly CLI script..."
+
+  if [[ -f "${cli_file}" ]]; then
+    cp "${cli_file}" "${temp_cli}"
+    log_success "CLI script backed up to ${temp_cli}"
+  else
+    log_warn "No CLI script found to backup"
+  fi
+}
+
 main() {
   set -euo pipefail
   source_i2b2_helper
@@ -62,8 +75,9 @@ main() {
   cleanup_j2ee_deployments
   case "$OPERATION" in
     remove)
-      backup_aktin_properties
       # Runs during package removal before files are deleted
+      backup_aktin_properties
+      backup_config_removal_script
       ;;
     upgrade)
       # Runs during package upgrade before old files are deleted

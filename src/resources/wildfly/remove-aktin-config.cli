@@ -1,0 +1,10 @@
+# Start an embedded server for offline manipulation of the standalone.xml configuration file
+embed-server
+
+# Remove the AktinDS datasource if it exists
+if (outcome == success) of /subsystem=datasources/data-source=AktinDS:read-resource
+  /subsystem=datasources/data-source=AktinDS:remove
+end-if
+
+# Stop the embedded server to save changes and exit
+stop-embedded-server

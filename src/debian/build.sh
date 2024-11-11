@@ -130,7 +130,7 @@ copy_wildfly_config() {
   local dir_wildfly_config="${1}"
   echo "Copying WildFly configuration..."
   mkdir -p "${DIR_BUILD}${dir_wildfly_config}"
-  cp "${DIR_RESOURCES}/wildfly/aktin-wildfly-config.cli" "${DIR_BUILD}${dir_wildfly_config}"
+  cp "${DIR_RESOURCES}/wildfly/"* "${DIR_BUILD}${dir_wildfly_config}"
 }
 
 copy_sql_scripts() {
