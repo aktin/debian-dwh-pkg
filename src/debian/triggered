@@ -29,9 +29,9 @@ backup_wildfly_artifacts() {
   fi
 
   # Backup CLI configuration if exists
-  if [ -f "/opt/wildfly/bin/aktin_config.cli" ]; then
+  if [ -f "/opt/wildfly/bin/aktin-wildfly-config.cli" ]; then
     log_info "Backing up WildFly configuration script"
-    cp -f /opt/wildfly/bin/aktin_config.cli "${BACKUP_DIR}/"
+    cp -f /opt/wildfly/bin/aktin-wildfly-config.cli "${BACKUP_DIR}/"
   else
     log_warn "No WildFly configuration script found to backup"
   fi
@@ -54,17 +54,17 @@ restore_and_configure_wildfly() {
   fi
 
   # Restore and configure CLI script
-  if [ -f "${BACKUP_DIR}/aktin_config.cli" ]; then
+  if [ -f "${BACKUP_DIR}/aktin-wildfly-config.cli" ]; then
     log_info "Restoring and configuring WildFly datasource"
     # Create temporary copy for modification
-    cp -f "${BACKUP_DIR}/aktin_config.cli" /opt/wildfly/bin/
+    cp -f "${BACKUP_DIR}/aktin-wildfly-config.cli" /opt/wildfly/bin/
 
     # Update JDBC version in temporary CLI file
     local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
     if [ -n "${jdbc_driver}" ]; then
       log_info "Configuring AKTIN datasource for Wildfly..."
       local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-      local cli_file="/opt/wildfly/bin/aktin_config.cli"
+      local cli_file="/opt/wildfly/bin/aktin-wildfly-config.cli"
       local temp_cli=$(mktemp)
       sed -e "s|__POSTGRES_JDBC_VERSION__|${jdbc_version}|g" "${cli_file}" > "${temp_cli}"
       /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"

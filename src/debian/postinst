@@ -98,7 +98,7 @@ add_aktin_datasource() {
 
   if [ -n "${jdbc_driver}" ]; then
     local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-    local cli_file="/opt/wildfly/bin/aktin_config.cli"
+    local cli_file="/opt/wildfly/bin/aktin-wildfly-config.cli"
     local temp_cli=$(mktemp)
     sed -e "s|__POSTGRES_JDBC_VERSION__|${jdbc_version}|g" "${cli_file}" > "${temp_cli}"
     /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
