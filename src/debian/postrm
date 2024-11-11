@@ -41,19 +41,10 @@ If no other services require it, you can disable it with:
   sudo systemctl restart apache2\033[0m"
 }
 
-remove_wildfly_artifacts() {
-  log_info "Cleaning up WildFly artifacts..."
-  rm -f /opt/wildfly/standalone/deployments/dwh-j2ee-*
+cleanup_wildfly_config_links() {
+  log_info "Removing AKTIN configuration links from WildFly..."
   rm -f /opt/wildfly/standalone/configuration/aktin.properties
-  rm -f /opt/wildfly/bin/aktin_config.cli
-  log_success "WildFly artifacts removed"
-}
-
-remove_aktin_files() {
-  log_info "Removing AKTIN properties and import scripts..."
-  rm -f /etc/aktin/aktin.properties
-  rm -rf /var/lib/aktin/import-scripts
-  log_success "AKTIN files removed"
+  log_success "WildFly configuration links removed"
 }
 
 drop_aktin_database() {
@@ -88,7 +79,7 @@ main() {
       # Runs during package removal after files have been deleted
       disable_apache_reverse_proxy_config
       notify_user_about_http_module
-      remove_wildfly_artifacts
+      cleanup_wildfly_config_links
       remove_aktin_files
       ;;
     purge)
