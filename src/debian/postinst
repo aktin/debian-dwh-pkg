@@ -148,6 +148,17 @@ main() {
       set_wildfly_permissions
       check_and_start_service "wildfly"
       ;;
+    triggered)
+      # Runs when another dependent packages throw the appropriate dpkg-trigger
+      local trigger="${2}"
+      if [ "${trigger}" = "__TRIGGER_PREFIX__-reapply-datasource" ]; then
+        log_info "Reapplying DWH datasource configuration"
+        add_aktin_datasource
+        systemctl restart wildfly
+      else
+        log_warn "Handling another trigger"
+      fi
+      ;;
   esac
 }
 
