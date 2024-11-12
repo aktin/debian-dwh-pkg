@@ -29,15 +29,17 @@ source_i2b2_helper() {
 main() {
   set -euo pipefail
   source_i2b2_helper
-  check_and_start_service "postgresql"
-  check_and_start_service "apache2"
   case "$OPERATION" in
     install)
       # Runs during installation before files have been unpacked
+      check_and_start_service "postgresql"
+      check_and_start_service "apache2"
       stop_service "wildfly"
       ;;
     upgrade)
       # Runs during package upgrade before files have been unpacked
+      check_and_start_service "postgresql"
+      check_and_start_service "apache2"
       ;;
   esac
 }

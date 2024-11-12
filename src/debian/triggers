@@ -2,4 +2,3 @@
 
 # Runs after the update of the i2b2 package to reapply Wildfly configuration of this package
 interest __TRIGGER_PREFIX__-reapply-datasource
-
