@@ -13,17 +13,48 @@ set -euo pipefail
 readonly PACKAGE_NAME="aktin-notaufnahme-dwh"
 readonly TRIGGER_PREFIX="aktin"
 
-# Validate and set package version from environment variable or first argument
-# Exit with error if version is missing or doesn't start with a number
-readonly PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
+CLEANUP=false
+PACKAGE_VERSION=""
+
+usage() {
+  echo "Usage: $0 <PACKAGE_VERSION> [--cleanup]" >&2
+  echo "  PACKAGE_VERSION    Version number for the package (must start with a number)" >&2
+  echo "  --cleanup          Optional: Remove build directory after package creation" >&2
+  exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --cleanup)
+      CLEANUP=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      if [[ -z "${PACKAGE_VERSION}" ]]; then
+        PACKAGE_VERSION="$1"
+      else
+        echo "Error: Unexpected argument '$1'" >&2
+        usage
+      fi
+      shift
+      ;;
+  esac
+done
+
 if [[ -z "${PACKAGE_VERSION}" ]]; then
-    echo "Error: PACKAGE_VERSION is not specified." >&2
-    echo "Usage: $0 <PACKAGE_VERSION>" >&2
-    exit 1
+  PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
+fi
+if [[ -z "${PACKAGE_VERSION}" ]]; then
+  echo "Error: PACKAGE_VERSION is not specified." >&2
+  echo "Usage: $0 <PACKAGE_VERSION>" >&2
+  exit 1
 elif ! [[ "${PACKAGE_VERSION}" =~ ^[0-9] ]]; then
-    echo "Error: PACKAGE_VERSION must start with a number." >&2
-    echo "Example: 1.0.0, 2.1.0-rc1" >&2
-    exit 1
+  echo "Error: PACKAGE_VERSION must start with a number." >&2
+  echo "Example: 1.0.0, 2.1.0-rc1" >&2
+  exit 1
 fi
 
 # Define relevant directories as absolute paths
@@ -160,7 +191,10 @@ prepare_management_scripts_and_files() {
 build_package() {
   echo "Building Debian package..."
   dpkg-deb --build "${DIR_BUILD}"
-  rm -rf "${DIR_BUILD}"
+  if [[ "${CLEANUP}" == true ]]; then
+    echo "Cleaning up build directory..."
+    rm -rf "${DIR_BUILD}"
+  fi
 }
 
 main() {
