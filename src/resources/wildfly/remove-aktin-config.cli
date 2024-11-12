@@ -7,12 +7,12 @@ if (outcome == success) of /subsystem=datasources/data-source=AktinDS:read-resou
 end-if
 
 # Remove max-post-size for both HTTP and HTTPS listeners
-if [ "$(/subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size"))" != "1073741824" ]; then
-    /subsystem=undertow/server=default-server/http-listener=default:undefine-attribute(name="max-post-size")
-fi
-if [ "$(/subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size"))" != "1073741824" ]; then
-    /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name="max-post-size")
-fi
+if (outcome == success) of /subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size")
+  /subsystem=undertow/server=default-server/http-listener=default:undefine-attribute(name="max-post-size")
+end-if
+if (outcome == success) of /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size")
+  /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name="max-post-size")
+end-if
 
 # Stop the embedded server to save changes and exit
 stop-embedded-server

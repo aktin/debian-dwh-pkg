@@ -39,12 +39,12 @@ end-if
 
 # Configure Undertow (web server) subsystem
 # Increase maximum POST size to 1GB for both HTTP and HTTPS listeners to handle large requests
-if [ "$(/subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size"))" != "1073741824" ]; then
-    /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name="max-post-size", value="1073741824")
-fi
-if [ "$(/subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size"))" != "1073741824" ]; then
-    /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name="max-post-size", value="1073741824")
-fi
+if (outcome == success) of /subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size", include-defaults=true)
+  /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name="max-post-size", value="1073741824")
+end-if
+if (outcome == success) of /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size", include-defaults=true)
+  /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name="max-post-size", value="1073741824")
+end-if
 
 # Stop the embedded server to save changes and exit
 stop-embedded-server
