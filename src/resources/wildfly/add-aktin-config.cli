@@ -1,0 +1,50 @@
+# The PostgreSQL JDBC driver version is dynamically detected from the existing WildFly deployments (provided by the aktin-notaufnahme-i2b2 package).
+# Placeholders in this file will be replaced during installation to match the detected JDBC version.
+
+# Start an embedded server for offline manipulation of the standalone.xml configuration file
+embed-server
+
+# Check if the AktinDS datasource already exists
+if (outcome != success) of /subsystem=datasources/data-source=AktinDS:read-resource
+  # Add a new datasource named AktinDS with specified configuration parameters
+  data-source add --name=AktinDS \
+      --jndi-name=java:/jboss/datasources/AktinDS \
+      --driver-name=postgresql-__POSTGRES_JDBC_VERSION__.jar \
+      --driver-class=org.postgresql.Driver \
+      --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/aktin \
+      --user-name=aktin \
+      --password=aktin \
+      --jta=false \
+      --use-ccm=false
+
+  # Configure validation and statement settings for AKTIN datasource (same configuration as i2b2 datasources)
+  # Disable validation on match to improve performance
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=validate-on-match,value=false)
+
+  # Enable background validation to check connections periodically
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation,value=true)
+
+  # Set background validation interval to 60000 milliseconds (1 minute)
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=background-validation-millis,value=60000)
+
+  # Enable fast fail to fail quickly if a connection is invalid
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=use-fast-fail,value=true)
+
+  # Set SQL query used to validate connections
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=check-valid-connection-sql,value="SELECT 1")
+
+  # Disable shared prepared statements
+  /subsystem=datasources/data-source=AktinDS:write-attribute(name=share-prepared-statements, value=false)
+end-if
+
+# Configure Undertow (web server) subsystem
+# Increase maximum POST size to 1GB for both HTTP and HTTPS listeners to handle large requests
+if (outcome == success) of /subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size", include-defaults=true)
+  /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name="max-post-size", value="1073741824")
+end-if
+if (outcome == success) of /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size", include-defaults=true)
+  /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name="max-post-size", value="1073741824")
+end-if
+
+# Stop the embedded server to save changes and exit
+stop-embedded-server

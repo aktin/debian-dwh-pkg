@@ -1,0 +1,47 @@
+#!/bin/bash
+#--------------------------------------
+# Script Name:  preinst
+# Version:      1.2
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         08 Nov 24
+# Purpose:      Prepares the system before new package files are unpacked by validating requirements, backing up configs, and ensuring prerequisites are met.
+#--------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
+
+readonly OPERATION="${1}"
+
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
+  log_info "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    log_error "i2b2 helper script not found at ${helper_path}"
+    return 1
+  fi
+  source "${helper_path}"
+  log_success "Helper script loaded"
+}
+
+main() {
+  set -euo pipefail
+  source_i2b2_helper
+  case "$OPERATION" in
+    install)
+      # Runs during installation before files have been unpacked
+      check_and_start_service "postgresql"
+      check_and_start_service "apache2"
+      stop_service "wildfly"
+      ;;
+    upgrade)
+      # Runs during package upgrade before files have been unpacked
+      check_and_start_service "postgresql"
+      check_and_start_service "apache2"
+      ;;
+  esac
+}
+
+main "$@"

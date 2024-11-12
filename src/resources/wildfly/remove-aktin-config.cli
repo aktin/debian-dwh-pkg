@@ -1,0 +1,18 @@
+# Start an embedded server for offline manipulation of the standalone.xml configuration file
+embed-server
+
+# Remove the AktinDS datasource if it exists
+if (outcome == success) of /subsystem=datasources/data-source=AktinDS:read-resource
+  /subsystem=datasources/data-source=AktinDS:remove
+end-if
+
+# Remove max-post-size for both HTTP and HTTPS listeners
+if (outcome == success) of /subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size")
+  /subsystem=undertow/server=default-server/http-listener=default:undefine-attribute(name="max-post-size")
+end-if
+if (outcome == success) of /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size")
+  /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name="max-post-size")
+end-if
+
+# Stop the embedded server to save changes and exit
+stop-embedded-server

@@ -1,0 +1,91 @@
+#!/bin/bash
+#--------------------------------------
+# Script Name:  prerm
+# Version:      1.2
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         08 Nov 24
+# Purpose:      Prepares the system before package files are removed by stopping services, backing up user data, and cleaning runtime artifacts.
+# --------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
+
+readonly OPERATION="${1}"
+
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
+  log_info "Loading i2b2 helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    log_error "i2b2 helper script not found at ${helper_path}"
+    return 1
+  fi
+  source "${helper_path}"
+  log_success "Helper script loaded"
+}
+
+cleanup_j2ee_deployments() {
+  local dir_wildfly_deployments="/opt/wildfly/standalone/deployments"
+  log_info "Cleaning up deployments..."
+
+  if ! compgen -G "${dir_wildfly_deployments}/dwh-j2ee-*" > /dev/null; then
+    log_warn "No deployments found"
+    return 0
+  fi
+  rm -f "${dir_wildfly_deployments}"/dwh-j2ee-*
+  log_success "Deployments cleaned up"
+}
+
+# Backs up aktin.properties by moving it with a timestamped name. Using `mv` instead of `cp` removes the original file, so `dpkg` won’t detect
+# a modified configuration during upgrades. This ensures the new version installs without prompting, while preserving the old file as a backup.
+backup_aktin_properties() {
+  local path_aktin_properties="/etc/aktin/aktin.properties"
+  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
+  log_info "Backing up AKTIN configuration..."
+  if [[ ! -f "${path_aktin_properties}" ]]; then
+    log_warn "No configuration found to backup"
+    return 0
+  fi
+  if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
+    log_error "Failed to create backup at ${path_backup}"
+    return 1
+  fi
+  log_success "Configuration backed up to ${path_backup}"
+}
+
+backup_config_removal_script() {
+  local cli_file="/opt/wildfly/bin/remove-aktin-config.cli"
+  local temp_cli="/tmp/remove-aktin-config.cli"
+  log_info "Backing up WildFly CLI script..."
+
+  if [[ -f "${cli_file}" ]]; then
+    cp "${cli_file}" "${temp_cli}"
+    log_success "CLI script backed up to ${temp_cli}"
+  else
+    log_warn "No CLI script found to backup"
+  fi
+}
+
+main() {
+  set -euo pipefail
+  source_i2b2_helper
+  case "$OPERATION" in
+    remove)
+      # Runs during package removal before files are deleted
+      stop_service "wildfly"
+      cleanup_j2ee_deployments
+      backup_aktin_properties
+      backup_config_removal_script
+      ;;
+    upgrade)
+      # Runs during package upgrade before old files are deleted
+      stop_service "wildfly"
+      cleanup_j2ee_deployments
+      backup_aktin_properties
+      ;;
+  esac
+}
+
+main "$@"
