@@ -37,5 +37,14 @@ if (outcome != success) of /subsystem=datasources/data-source=AktinDS:read-resou
   /subsystem=datasources/data-source=AktinDS:write-attribute(name=share-prepared-statements, value=false)
 end-if
 
+# Configure Undertow (web server) subsystem
+# Increase maximum POST size to 1GB for both HTTP and HTTPS listeners to handle large requests
+if [ "$(/subsystem=undertow/server=default-server/http-listener=default:read-attribute(name="max-post-size"))" != "1073741824" ]; then
+    /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name="max-post-size", value="1073741824")
+fi
+if [ "$(/subsystem=undertow/server=default-server/https-listener=https:read-attribute(name="max-post-size"))" != "1073741824" ]; then
+    /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name="max-post-size", value="1073741824")
+fi
+
 # Stop the embedded server to save changes and exit
 stop-embedded-server
