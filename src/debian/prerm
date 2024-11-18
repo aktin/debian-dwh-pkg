@@ -70,10 +70,10 @@ backup_config_removal_script() {
 
 main() {
   set -euo pipefail
-  source_i2b2_helper
   case "$OPERATION" in
     remove)
       # Runs during package removal before files are deleted
+      source_i2b2_helper
       stop_service "wildfly"
       cleanup_j2ee_deployments
       backup_aktin_properties
@@ -81,6 +81,7 @@ main() {
       ;;
     upgrade)
       # Runs during package upgrade before old files are deleted
+      source_i2b2_helper
       stop_service "wildfly"
       cleanup_j2ee_deployments
       backup_aktin_properties

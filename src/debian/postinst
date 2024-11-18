@@ -133,10 +133,10 @@ set_wildfly_permissions() {
 
 main() {
   set -euo pipefail
-  source_i2b2_helper
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked
+      source_i2b2_helper
       configure_apache
       init_and_seed_aktin_database
       apply_database_updates
@@ -151,6 +151,7 @@ main() {
       # Runs when another dependent packages throw the appropriate dpkg-trigger
       local trigger="${2}"
       if [ "${trigger}" = "__TRIGGER_PREFIX__-reapply-datasource" ]; then
+        source_i2b2_helper
         log_info "Reapplying DWH datasource configuration"
         stop_service "wildfly"
         add_aktin_datasource
