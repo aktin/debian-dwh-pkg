@@ -156,8 +156,6 @@ main() {
         stop_service "wildfly"
         add_aktin_datasource
         check_and_start_service "wildfly"
-      else
-        log_warn "Handling another trigger"
       fi
       ;;
   esac
