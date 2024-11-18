@@ -39,6 +39,15 @@ main() {
     upgrade)
       source_i2b2_helper
       # Runs during package upgrade before files have been unpacked
+      local version="${2}"
+      if [ "${version}" = "1.5.1rc1" ]; then
+        # Runs only on update of package 1.5.1rc1
+        i2b2_version=$(dpkg-query -W -f='${Version}' aktin-notaufnahme-i2b2 2>/dev/null || echo "0")
+        if dpkg --compare-versions "$i2b2_version" lt "1.6"; then
+          log_error "aktin-notaufnahme-i2b2 version 1.6 or higher is required (found: $i2b2_version)"
+          exit 1
+        fi
+      fi
       check_and_start_service "postgresql"
       check_and_start_service "apache2"
       ;;
