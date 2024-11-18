@@ -26,6 +26,14 @@ source_i2b2_helper() {
   log_success "Helper script loaded"
 }
 
+check_i2b2_package_version() {
+  i2b2_version=$(dpkg-query -W -f='${Version}' __I2B2_PACKAGE_NAME__ 2>/dev/null || echo "0")
+  if dpkg --compare-versions "$i2b2_version" lt "1.6"; then
+    log_error "__I2B2_PACKAGE_NAME__ version 1.6 or higher is required (found: $i2b2_version)"
+    exit 1
+  fi
+}
+
 main() {
   set -euo pipefail
   case "$OPERATION" in
@@ -37,8 +45,13 @@ main() {
       stop_service "wildfly"
       ;;
     upgrade)
-      source_i2b2_helper
       # Runs during package upgrade before files have been unpacked
+      source_i2b2_helper
+      local version="${2}"
+      if [ "${version}" = "1.5.1rc1" ]; then
+        # Runs only on update of package 1.5.1rc1
+        check_i2b2_package_version
+      fi
       check_and_start_service "postgresql"
       check_and_start_service "apache2"
       ;;
