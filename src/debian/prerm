@@ -81,10 +81,6 @@ main() {
       ;;
     upgrade)
       # Runs during package upgrade before old files are deleted
-      source_i2b2_helper
-      stop_service "wildfly"
-      cleanup_j2ee_deployments
-      backup_aktin_properties
       ;;
   esac
 }
