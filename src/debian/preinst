@@ -26,18 +26,69 @@ source_i2b2_helper() {
   log_success "Helper script loaded"
 }
 
+check_i2b2_package_version() {
+  i2b2_version=$(dpkg-query -W -f='${Version}' __I2B2_PACKAGE_NAME__ 2>/dev/null || echo "0")
+  if dpkg --compare-versions "$i2b2_version" lt "1.6"; then
+    log_error "__I2B2_PACKAGE_NAME__ version 1.6 or higher is required (found: $i2b2_version)"
+    exit 1
+  fi
+}
+
+# Backs up aktin.properties by moving it with a timestamped name. Using `mv` instead of `cp` removes the original file, so `dpkg` won’t detect
+# a modified configuration during upgrades. This ensures the new version installs without prompting, while preserving the old file as a backup.
+backup_aktin_properties() {
+  local path_aktin_properties="/etc/aktin/aktin.properties"
+  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
+  log_info "Backing up AKTIN configuration..."
+  if [[ ! -f "${path_aktin_properties}" ]]; then
+    log_warn "No configuration found to backup"
+    return 0
+  fi
+  if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
+    log_error "Failed to create backup at ${path_backup}"
+    return 1
+  fi
+  log_success "Configuration backed up to ${path_backup}"
+}
+
+cleanup_j2ee_deployments() {
+  local dir_wildfly_deployments="/opt/wildfly/standalone/deployments"
+  log_info "Cleaning up deployments..."
+
+  if ! compgen -G "${dir_wildfly_deployments}/dwh-j2ee-*" > /dev/null; then
+    log_warn "No deployments found"
+    return 0
+  fi
+  rm -f "${dir_wildfly_deployments}"/dwh-j2ee-*
+  log_success "Deployments cleaned up"
+}
+
 main() {
   set -euo pipefail
-  source_i2b2_helper
   case "$OPERATION" in
     install)
       # Runs during installation before files have been unpacked
+      source_i2b2_helper
       check_and_start_service "postgresql"
       check_and_start_service "apache2"
       stop_service "wildfly"
       ;;
     upgrade)
       # Runs during package upgrade before files have been unpacked
+      source_i2b2_helper
+      local version="${2}"
+      if [ "${version}" = "1.5.1rc1" ]; then
+        # Runs only on update of package 1.5.1rc1
+        check_i2b2_package_version
+      fi
+      stop_service "wildfly"
+      cleanup_j2ee_deployments
+      backup_aktin_properties
+      if [ "${version}" = "1.5.1rc1" ]; then
+        # Runs only on update of package 1.5.1rc1
+        remove_datasource_files "" "aktin-ds"
+        cleanup_wildfly_deployment_markers
+      fi
       check_and_start_service "postgresql"
       check_and_start_service "apache2"
       ;;

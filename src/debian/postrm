@@ -86,22 +86,24 @@ purge_aktin_files() {
 
 main() {
   set -euo pipefail
-  source_i2b2_helper
   case "$OPERATION" in
     remove)
       # Runs during package removal after files have been deleted
+      source_i2b2_helper
       disable_apache_reverse_proxy_config
       notify_user_about_http_module
       cleanup_wildfly_config_links
       remove_aktin_datasource
+      check_and_start_service "wildfly"
       ;;
     purge)
       # Runs during a purge after 'postrm remove' to delete all leftover files
+      source_i2b2_helper
       drop_aktin_database
       purge_aktin_files
+      check_and_start_service "wildfly"
       ;;
   esac
-  check_and_start_service "wildfly"
 }
 
 main "$@"
