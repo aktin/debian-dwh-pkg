@@ -7,29 +7,24 @@
 # Purpose:      Configures the package after files are unpacked by initializing services, databases, and required configurations to make the package operational.
 #--------------------------------------
 
-log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
-log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
-log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
-log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
-
 readonly OPERATION="${1}"
 
 # Source helper script from i2b2 package
 source_i2b2_helper() {
   local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
-  log_info "Loading i2b2 helper script..."
+  echo -e "\033[0;34m[INFO]\033[0m Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    log_error "i2b2 helper script not found at ${helper_path}"
-    return 1
+    echo -e "\033[0;31m[ERROR]\033[0m i2b2 helper.sh not found at ${helper_path}" >&2
+    exit 1
   fi
-  source "${helper_path}"
-  log_success "Helper script loaded"
+  . "${helper_path}"
+  echo -e "\033[0;32m[SUCCESS]\033[0m Helper script loaded"
 }
 
 configure_apache() {
   log_info "Setting up Apache proxy..."
-  a2enmod proxy_http >/dev/null || true
-  a2enconf aktin-j2ee-reverse-proxy >/dev/null || true
+  a2enmod proxy_http >/dev/null 2>&1
+  a2enconf aktin-j2ee-reverse-proxy >/dev/null 2>&1
   systemctl restart apache2
   log_success "Apache proxy configured"
 }
@@ -37,11 +32,17 @@ configure_apache() {
 init_and_seed_aktin_database() {
   connect_to_psql
   log_info "Initializing AKTIN database..."
+
   if [[ $(eval "${PSQL} -l" | grep -c "aktin") -eq 0 ]]; then
-    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2metadata.sql" >/dev/null
-    eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2crcdata.concept_dimension.sql" >/dev/null
-    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/aktin_init.sql" >/dev/null
-    log_success "Database initialized successfully"
+    local sql_files=(
+      "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2metadata.sql"
+      "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/addon_i2b2crcdata.concept_dimension.sql"
+      "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/aktin_init.sql"
+    )
+    for sql_file in "${sql_files[@]}"; do
+      eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f ${sql_file}" >/dev/null
+    done
+    log_success "AKTIN database initialized"
   else
     log_info "Database AKTIN already exists"
   fi
@@ -50,8 +51,7 @@ init_and_seed_aktin_database() {
 # TODO: Version tracking which updates have already been applied
 apply_database_updates() {
   connect_to_psql
-  local sql_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql"
-  local updates=($(find "${sql_dir}" -name "update*.sql" | sort))
+  local updates=($(find "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql" -name "update*.sql" | sort))
   log_info "Checking for database updates..."
 
   if [[ ${#updates[@]} -eq 0 ]]; then
@@ -59,8 +59,7 @@ apply_database_updates() {
     return 0
   fi
   for update in "${updates[@]}"; do
-    local update_name=$(basename "$update" .sql)
-    log_info "Applying ${update_name}..."
+    log_info "Applying $(basename "$update" .sql)..."
     eval "${PSQL} -d i2b2 -v ON_ERROR_STOP=1 -f ${update}" >/dev/null
   done
   log_success "Database updates applied"
@@ -85,27 +84,25 @@ restore_aktin_properties() {
 }
 
 link_properties_to_wildfly() {
-  log_info "Creating symbolic link for AKTIN properties in WildFly..."
+  log_info "Creating symbolic link for AKTIN properties..."
   ln -sf /etc/aktin/aktin.properties /opt/wildfly/standalone/configuration/
-  log_success "Symbolic link created in WildFly configuration directory"
+  log_success "Symbolic link created"
 }
 
 add_aktin_datasource() {
   local jdbc_driver=$(ls /opt/wildfly/standalone/deployments/postgresql-*.jar 2>/dev/null | head -n 1)
-  log_info "Configuring AKTIN datasource for Wildfly..."
+  log_info "Configuring AKTIN datasource..."
 
   if [ -n "${jdbc_driver}" ]; then
     local jdbc_version=$(basename "${jdbc_driver}" | sed -E 's/postgresql-(.*)\.jar/\1/')
-    local cli_file="/opt/wildfly/bin/add-aktin-config.cli"
     local temp_cli=$(mktemp)
-    sed -e "s|__POSTGRES_JDBC_VERSION__|${jdbc_version}|g" "${cli_file}" > "${temp_cli}"
+    sed "s|__POSTGRES_JDBC_VERSION__|${jdbc_version}|g" "/opt/wildfly/bin/add-aktin-config.cli" > "${temp_cli}"
     /opt/wildfly/bin/jboss-cli.sh --file="${temp_cli}"
-    log_success "AKTIN datasource configured"
+    rm -f "${temp_cli}"
+    log_success "Datasource configured"
   else
     log_error "No PostgreSQL JDBC driver found"
   fi
-  # Cleanup
-  rm -f "${temp_cli}"
 }
 
 # update files uploaded with old p21 scripts to newest script id
@@ -123,11 +120,9 @@ update_p21_script_refs() {
   fi
 }
 
-# TODO change to thrown trigger for i2b2 package
 set_wildfly_permissions() {
   log_info "Setting up Wildfly user permissions..."
-  chown -R wildfly:wildfly /opt/wildfly
-  chown -R wildfly:wildfly /var/lib/aktin
+  chown -R wildfly:wildfly /opt/wildfly /var/lib/aktin
   log_success "WildFly user permissions set"
 }
 
@@ -149,10 +144,9 @@ main() {
       ;;
     triggered)
       # Runs when another dependent packages throw the appropriate dpkg-trigger
-      local trigger="${2}"
-      if [ "${trigger}" = "__TRIGGER_PREFIX__-reapply-datasource" ]; then
+      if [ "${2}" = "__TRIGGER_PREFIX__-reapply-datasource" ]; then
         source_i2b2_helper
-        log_info "Reapplying DWH datasource configuration"
+        log_info "Reapplying DWH datasource"
         stop_service "wildfly"
         add_aktin_datasource
         check_and_start_service "wildfly"
