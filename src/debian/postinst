@@ -9,11 +9,12 @@
 
 readonly OPERATION="${1}"
 
-source_helper_script() {
-  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  echo -e "\033[0;34m[INFO]\033[0m Loading helper script..."
+# Source helper script from i2b2 package
+source_i2b2_helper() {
+  local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
+  echo -e "\033[0;34m[INFO]\033[0m Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    echo -e "\033[0;31m[ERROR]\033[0m helper.sh not found at ${helper_path}" >&2
+    echo -e "\033[0;31m[ERROR]\033[0m i2b2 helper.sh not found at ${helper_path}" >&2
     exit 1
   fi
   . "${helper_path}"
@@ -130,7 +131,7 @@ main() {
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked
-      source_helper_script
+      source_i2b2_helper
       configure_apache
       init_and_seed_aktin_database
       apply_database_updates
@@ -143,8 +144,7 @@ main() {
       ;;
     triggered)
       # Runs when another dependent packages throw the appropriate dpkg-trigger
-      local trigger="${2}"
-      if [ "${trigger}" = "__TRIGGER_PREFIX__-reapply-datasource" ]; then
+      if [ "${2}" = "__TRIGGER_PREFIX__-reapply-datasource" ]; then
         source_i2b2_helper
         log_info "Reapplying DWH datasource"
         stop_service "wildfly"
