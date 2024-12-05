@@ -158,6 +158,13 @@ copy_sql_scripts() {
   cp -r "${DIR_RESOURCES}/sql/"* "${DIR_BUILD}${dir_db}"
 }
 
+copy_helper_scripts() {
+  local dir_helper="${1}"
+  echo "Copying helper scripts..."
+  mkdir -p "${DIR_BUILD}${dir_helper}"
+  cp "${DIR_RESOURCES}/helper.sh" "${DIR_BUILD}${dir_helper}"
+}
+
 prepare_management_scripts_and_files() {
   local i2b2_package_name="$(echo "${PACKAGE_NAME}" | awk -F '-' '{print $1"-"$2"-i2b2"}')"
   echo "Preparing Debian package management files..."
@@ -198,6 +205,7 @@ main() {
   copy_aktin_properties "/etc/aktin"
   copy_wildfly_config "/opt/wildfly/bin"
   copy_sql_scripts "/usr/share/${PACKAGE_NAME}/sql"
+  copy_helper_scripts "/usr/share/${PACKAGE_NAME}"
   prepare_management_scripts_and_files
   build_package
 }
