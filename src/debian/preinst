@@ -7,60 +7,68 @@
 # Purpose:      Prepares the system before new package files are unpacked by validating requirements, backing up configs, and ensuring prerequisites are met.
 #--------------------------------------
 
-log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
-log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
-log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
-log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
-
 readonly OPERATION="${1}"
 
 # Source helper script from i2b2 package
 source_i2b2_helper() {
   local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
-  log_info "Loading i2b2 helper script..."
+  echo -e "\033[0;34m[INFO]\033[0m Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    log_error "i2b2 helper script not found at ${helper_path}"
-    return 1
+    echo -e "\033[0;31m[ERROR]\033[0m i2b2 helper.sh not found at ${helper_path}" >&2
+    exit 1
   fi
-  source "${helper_path}"
-  log_success "Helper script loaded"
+  . "${helper_path}"
+  echo -e "\033[0;32m[SUCCESS]\033[0m Helper script loaded"
 }
 
 check_i2b2_package_version() {
-  i2b2_version=$(dpkg-query -W -f='${Version}' __I2B2_PACKAGE_NAME__ 2>/dev/null || echo "0")
-  if dpkg --compare-versions "$i2b2_version" lt "1.6"; then
-    log_error "__I2B2_PACKAGE_NAME__ version 1.6 or higher is required (found: $i2b2_version)"
+  local i2b2_version=$(dpkg-query -W -f='${Version}' __I2B2_PACKAGE_NAME__ 2>/dev/null || echo "0")
+  if dpkg --compare-versions "${i2b2_version}" lt "1.6"; then
+    log_error "__I2B2_PACKAGE_NAME__ version 1.6 or higher is required (found: ${i2b2_version})"
     exit 1
   fi
 }
 
-# Backs up aktin.properties by moving it with a timestamped name. Using `mv` instead of `cp` removes the original file, so `dpkg` won’t detect
-# a modified configuration during upgrades. This ensures the new version installs without prompting, while preserving the old file as a backup.
-backup_aktin_properties() {
-  local path_aktin_properties="/etc/aktin/aktin.properties"
-  local path_backup="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
-  log_info "Backing up AKTIN configuration..."
-  if [[ ! -f "${path_aktin_properties}" ]]; then
-    log_warn "No configuration found to backup"
+cleanup_j2ee_deployments() {
+  local deploy_dir="/opt/wildfly/standalone/deployments"
+  log_info "Cleaning up deployments..."
+
+  if ! compgen -G "${deploy_dir}/dwh-j2ee-*" > /dev/null; then
+    log_warn "No deployments found"
     return 0
   fi
-  if ! mv -f "${path_aktin_properties}" "${path_backup}"; then
-    log_error "Failed to create backup at ${path_backup}"
+  rm -f "${deploy_dir}"/dwh-j2ee-*
+  log_success "Deployments cleaned up"
+}
+
+# Backs up aktin.properties by moving it with a timestamped name.
+# Using `mv` instead of `cp` removes the original file, so `
+# dpkg` won’t detect a modified configuration during upgrades.
+# This ensures the new version installs without prompting, while
+# preserving the old file as a backup.
+backup_aktin_properties() {
+  local config_path="/etc/aktin/aktin.properties"
+  local backup_path="/etc/aktin/backup_$(date +%Y%m%d_%H%M)_aktin.properties"
+  log_info "Backing up AKTIN configuration..."
+
+  if [[ ! -f "${config_path}" ]]; then
+    log_warn "No configuration found"
+    return 0
+  fi
+  if ! mv -f "${config_path}" "${backup_path}"; then
+    log_error "Backup failed: ${backup_path}"
     return 1
   fi
   log_success "Configuration backed up to ${path_backup}"
 }
 
-cleanup_j2ee_deployments() {
-  local dir_wildfly_deployments="/opt/wildfly/standalone/deployments"
-  log_info "Cleaning up deployments..."
-
-  if ! compgen -G "${dir_wildfly_deployments}/dwh-j2ee-*" > /dev/null; then
-    log_warn "No deployments found"
-    return 0
+handle_version_specific_updates() {
+  local version="${1}"
+  if [ "${version}" = "1.5.1rc1" ]; then
+    check_i2b2_package_version
+    remove_datasource_files "" "aktin-ds"
+    cleanup_wildfly_deployment_markers
   fi
-  rm -f "${dir_wildfly_deployments}"/dwh-j2ee-*
-  log_success "Deployments cleaned up"
 }
 
 main() {
@@ -76,19 +84,10 @@ main() {
     upgrade)
       # Runs during package upgrade before files have been unpacked
       source_i2b2_helper
-      local version="${2}"
-      if [ "${version}" = "1.5.1rc1" ]; then
-        # Runs only on update of package 1.5.1rc1
-        check_i2b2_package_version
-      fi
+      handle_version_specific_updates "${2}"
       stop_service "wildfly"
       cleanup_j2ee_deployments
       backup_aktin_properties
-      if [ "${version}" = "1.5.1rc1" ]; then
-        # Runs only on update of package 1.5.1rc1
-        remove_datasource_files "" "aktin-ds"
-        cleanup_wildfly_deployment_markers
-      fi
       check_and_start_service "postgresql"
       check_and_start_service "apache2"
       ;;
