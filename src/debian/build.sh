@@ -1,25 +1,25 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  build.sh
-# Version:      1.1
+# Version:      1.2
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         31 Oct 24
+# Date:         05 Dec 24
 # Purpose:      Builds the AKTIN Emergency Department Data Warehouse (DWH) package. Downloads required artifacts, prepares configuration files and
 #               creates the Debian package that extends the i2b2 installation.
 #--------------------------------------
 
 set -euo pipefail
 
-readonly PACKAGE_NAME="aktin-notaufnahme-dwh"
+readonly PACKAGE_NAME="aktin-notaufnahme-i2b2"
 readonly TRIGGER_PREFIX="aktin"
 
 CLEANUP=false
-PACKAGE_VERSION=""
+SKIP_BUILD=false
 
 usage() {
-  echo "Usage: $0 <PACKAGE_VERSION> [--cleanup]" >&2
-  echo "  PACKAGE_VERSION    Version number for the package (must start with a number)" >&2
+  echo "Usage: $0 [--cleanup] [--skip-deb-build]" >&2
   echo "  --cleanup          Optional: Remove build directory after package creation" >&2
+  echo "  --skip-deb-build   Optional: Skip the debian package build step" >&2
   exit 1
 }
 
@@ -29,40 +29,31 @@ while [[ $# -gt 0 ]]; do
       CLEANUP=true
       shift
       ;;
+    --skip-deb-build)
+      SKIP_BUILD=true
+      shift
+      ;;
     -h|--help)
       usage
       ;;
     *)
-      if [[ -z "${PACKAGE_VERSION}" ]]; then
-        PACKAGE_VERSION="$1"
-      else
-        echo "Error: Unexpected argument '$1'" >&2
-        usage
-      fi
-      shift
+      echo "Error: Unexpected argument '$1'" >&2
+      usage
       ;;
   esac
 done
 
-if [[ -z "${PACKAGE_VERSION}" ]]; then
-  PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
-fi
-if [[ -z "${PACKAGE_VERSION}" ]]; then
-  echo "Error: PACKAGE_VERSION is not specified." >&2
-  echo "Usage: $0 <PACKAGE_VERSION>" >&2
-  exit 1
-elif ! [[ "${PACKAGE_VERSION}" =~ ^[0-9] ]]; then
-  echo "Error: PACKAGE_VERSION must start with a number." >&2
-  echo "Example: 1.0.0, 2.1.0-rc1" >&2
-  exit 1
-fi
-
 # Define relevant directories as absolute paths
 readonly DIR_DEBIAN="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly DIR_SRC="$(dirname "${DIR_DEBIAN}")"
-readonly DIR_BUILD="${DIR_SRC}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
 readonly DIR_RESOURCES="${DIR_SRC}/resources"
 readonly DIR_DOWNLOADS="${DIR_SRC}/downloads"
+
+# Load version-specific variables from file
+set -a
+. "${DIR_RESOURCES}/versions"
+set +a
+readonly DIR_BUILD="${DIR_SRC}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
 
 clean_up_build_environment() {
   echo "Cleaning up previous build environment..."
@@ -71,10 +62,6 @@ clean_up_build_environment() {
 
 init_build_environment() {
   echo "Initializing build environment..."
-  set -a
-  # Load version-specific variables from file
-  . "${DIR_RESOURCES}/versions"
-  set +a
   if [[ ! -d "${DIR_BUILD}" ]]; then
     mkdir -p "${DIR_BUILD}"
   fi
@@ -189,11 +176,15 @@ prepare_management_scripts_and_files() {
 }
 
 build_package() {
-  echo "Building Debian package..."
-  dpkg-deb --build "${DIR_BUILD}"
-  if [[ "${CLEANUP}" == true ]]; then
-    echo "Cleaning up build directory..."
-    rm -rf "${DIR_BUILD}"
+  if [[ "${SKIP_BUILD}" == false ]]; then
+    echo "Building Debian package..."
+    dpkg-deb --build "${DIR_BUILD}"
+    if [[ "${CLEANUP}" == true ]]; then
+      echo "Cleaning up build directory..."
+      rm -rf "${DIR_BUILD}"
+    fi
+  else
+    echo "Debian build skipped"
   fi
 }
 
