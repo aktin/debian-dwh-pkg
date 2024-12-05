@@ -7,23 +7,18 @@
 # Purpose:      Cleans up after package files are removed by purging configurations, user data, database entries, and notifying users about remaining manual steps.
 #--------------------------------------
 
-log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
-log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
-log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
-log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
-
 readonly OPERATION="${1}"
 
 # Source helper script from i2b2 package
 source_i2b2_helper() {
   local helper_path="/usr/share/__I2B2_PACKAGE_NAME__/helper.sh"
-  log_info "Loading i2b2 helper script..."
+  echo -e "\033[0;34m[INFO]\033[0m Loading i2b2 helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    log_error "i2b2 helper script not found at ${helper_path}"
-    return 1
+    echo -e "\033[0;31m[ERROR]\033[0m i2b2 helper.sh not found at ${helper_path}" >&2
+    exit 1
   fi
-  source "${helper_path}"
-  log_success "Helper script loaded"
+  . "${helper_path}"
+  echo -e "\033[0;32m[SUCCESS]\033[0m Helper script loaded"
 }
 
 disable_apache_reverse_proxy_config() {

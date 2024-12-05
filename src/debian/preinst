@@ -67,7 +67,6 @@ handle_version_specific_updates() {
   if [ "${version}" = "1.5.1rc1" ]; then
     check_i2b2_package_version
     remove_datasource_files "" "aktin-ds"
-    cleanup_wildfly_deployment_markers
   fi
 }
 
@@ -87,6 +86,7 @@ main() {
       handle_version_specific_updates "${2}"
       stop_service "wildfly"
       cleanup_j2ee_deployments
+      cleanup_wildfly_deployment_markers
       backup_aktin_properties
       check_and_start_service "postgresql"
       check_and_start_service "apache2"
