@@ -58,8 +58,8 @@ elif ! [[ "${PACKAGE_VERSION}" =~ ^[0-9] ]]; then
 fi
 
 # Define relevant directories as absolute paths
-readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly DIR_SRC="$(dirname "${DIR_CURRENT}")"
+readonly DIR_DEBIAN="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly DIR_SRC="$(dirname "${DIR_DEBIAN}")"
 readonly DIR_BUILD="${DIR_SRC}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
 readonly DIR_RESOURCES="${DIR_SRC}/resources"
 readonly DIR_DOWNLOADS="${DIR_SRC}/downloads"
@@ -177,12 +177,12 @@ prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
-  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
-  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/preinst" > "${DIR_BUILD}/DEBIAN/preinst"
-  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_CURRENT}/prerm" > "${DIR_BUILD}/DEBIAN/prerm"
-  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
-  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
-  sed -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_CURRENT}/triggers" > "${DIR_BUILD}/DEBIAN/triggers"
+  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_DEBIAN}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_DEBIAN}/preinst" > "${DIR_BUILD}/DEBIAN/preinst"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_DEBIAN}/prerm" > "${DIR_BUILD}/DEBIAN/prerm"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_DEBIAN}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
+  sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "/^__AKTIN_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/aktin_drop.sql" -e 'd;}' "${DIR_DEBIAN}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+  sed -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_DEBIAN}/triggers" > "${DIR_BUILD}/DEBIAN/triggers"
 
   # Set proper executable permissions
   chmod 0755 "${DIR_BUILD}/DEBIAN/"*
