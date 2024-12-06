@@ -1,4 +1,4 @@
-# debian-i2b2-pkg
+# debian-dwh-pkg
 
 This Debian package extends the [AKTIN i2b2 installation](https://github.com/aktin/debian-i2b2-pkg) with DWH (Data Warehouse) capabilities for emergency department data management. It provides data import functionality, reporting tools, and integration with the AKTIN broker network.
 
