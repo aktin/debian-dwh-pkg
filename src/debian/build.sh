@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-readonly PACKAGE_NAME="aktin-notaufnahme-i2b2"
+readonly PACKAGE_NAME="aktin-notaufnahme-dwh"
 readonly TRIGGER_PREFIX="aktin"
 
 CLEANUP=false
