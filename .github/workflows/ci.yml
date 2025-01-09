@@ -19,3 +19,6 @@ jobs:
   deploy:
     needs: build
     uses: aktin/aktin-github-scripts/.github/workflows/debian-deploy.yml@main
+    with:
+      package-name: 'aktin-notaufnahme-dwh'
+      package-version: ${{ needs.build.outputs.package-version }}
