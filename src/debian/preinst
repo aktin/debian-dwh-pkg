@@ -59,7 +59,7 @@ backup_aktin_properties() {
     log_error "Backup failed: ${backup_path}"
     return 1
   fi
-  log_success "Configuration backed up to ${path_backup}"
+  log_success "Configuration backed up to ${backup_path}"
 }
 
 handle_version_specific_updates() {
