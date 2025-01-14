@@ -175,7 +175,7 @@ prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
-  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_DEBIAN}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "s|__I2B2_PACKAGE_DEPENDENCY__|${I2B2_PACKAGE_DEPENDENCY}|g" "${DIR_DEBIAN}/control" > "${DIR_BUILD}/DEBIAN/control"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_DEBIAN}/preinst" > "${DIR_BUILD}/DEBIAN/preinst"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" "${DIR_DEBIAN}/prerm" > "${DIR_BUILD}/DEBIAN/prerm"
   sed -e "s|__I2B2_PACKAGE_NAME__|${i2b2_package_name}|g" -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_DEBIAN}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
