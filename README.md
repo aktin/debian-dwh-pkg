@@ -3,7 +3,7 @@
 This Debian package extends the [AKTIN i2b2 installation](https://github.com/aktin/debian-i2b2-pkg) with DWH (Data Warehouse) capabilities for emergency department data management. It provides data import functionality, reporting tools, and integration with the AKTIN broker network.
 
 ## Prerequisites
-- AKTIN i2b2 package (version ≥ 1.6)
+- AKTIN i2b2 package (version ≥ 1.8.1)
 - Python 3
 - R with required packages:
     - tidyverse
