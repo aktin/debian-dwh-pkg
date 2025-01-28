@@ -14,40 +14,8 @@ jobs:
     with:
       package-name: 'aktin-notaufnahme-dwh'
 
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Retrieve Cached AKTIN Repository GPG Public Key
-        id: gpg-key-cache
-        uses: actions/cache@v4
-        with:
-          path: /etc/apt/trusted.gpg.d/aktin.gpg
-          key: aktin-debian-repository-gpg-public-key
-
-      - name: Add AKTIN Repository
-        if: steps.gpg-key-cache.outputs.cache-hit
-        run: |
-          sudo wget -O - https://www.aktin.org/software/repo/org/apt/conf/aktin.gpg.key | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/aktin.gpg
-          echo "deb https://www.aktin.org/software/repo/org/apt focal main" > /etc/apt/sources.list.d/aktin.list
-          sudo apt update
-
-      - name: Install aktin-notaufnahme-i2b2 from AKTIN Repository
-        run: |
-          sudo apt install -y openjdk-11-jre-headless
-          sudo apt install -y aktin-notaufnahme-i2b2
-
-      - name: Install
-        run: |
-          sudo apt install -y openjdk-11-jre-headless
-          sudo apt install -y "build/aktin-notaufnahme-dwh_${{ needs.build.outputs.package-version }}.deb"
-          sudo service wildfly restart
-
-  #      - name: Test
-  #        run:  # TODO
-
   deploy:
-    needs: [ build, test ]
+    needs: build
     uses: aktin/aktin-github-scripts/.github/workflows/debian-deploy.yml@main
     with:
       package-name: 'aktin-notaufnahme-dwh'
