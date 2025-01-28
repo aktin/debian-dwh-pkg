@@ -17,4 +17,4 @@ jobs:
     with:
       package-name: 'aktin-notaufnahme-dwh'
       package-version: ${{ needs.build.outputs.package-version }}
-      codename: 'unstable'
+      codename: 'jammy-testing'
