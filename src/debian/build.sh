@@ -108,35 +108,35 @@ download_and_copy_dwh_j2ee() {
 
 download_p21_import_script() {
   local dir_downloads="${1}"
+  local desired_version="${P21_IMPORT_SCRIPT_VERSION}"
   local local_p21="${dir_downloads}/import-scripts/p21import.py"
-  local local_version="0.0.0"
 
-  # Check if the local p21import.py exists and extract its version
-  if [[ -f "${local_p21}" ]]; then
-    local_version="$(grep '^# @VERSION=' "${local_p21}" | sed 's/^# @VERSION=//')"
-  fi
-  # Get the first (latest) tag name directly from the repo
-  local tags_url="https://api.github.com/repos/aktin/p21-script/tags"
-  local latest_tag="$(curl -s "${tags_url}" | grep -m1 '"name":' | cut -d'"' -f4 | sed 's/^v//')"
-  if [[ -z "${latest_tag}" ]]; then
-     echo "Error: Failed to fetch latest tag from GitHub" >&2
-     return 1
-  fi
-  # Construct the URL for the latest tag version of p21import.py
-  local github_p21_url="https://raw.githubusercontent.com/aktin/p21-script/v${latest_tag}/src/p21import.py"
-  local github_version="$(curl -s "${github_p21_url}" | grep '^# @VERSION=' | sed 's/^# @VERSION=//')"
-
-  if [[ "${local_version}" = "${github_version}" ]]; then
-    echo "P21 import script is up to date (version ${local_version})."
-  else
-    if [[ "$(printf '%s\n' "${local_version}" "${github_version}" | sort -V | head -n1)" = "${local_version}" ]] && [[ "${local_version}" != "${github_version}" ]]; then
-      # Local version is older, download the newer script
-      mkdir -p "${dir_downloads}/import-scripts"
-      echo "Downloading P21 import script with version ${github_version}."
-      curl -s -o "${local_p21}" "${github_p21_url}"
-    else
-      echo "Local P21 import script version (${local_version}) is up-to-date or newer than GitHub version (${github_version})."
+  # resolve 'latest' to a concrete tag version
+  if [[ "${desired_version}" == "latest" ]]; then
+    local tags_url="https://api.github.com/repos/aktin/p21-script/tags"
+    desired_version="$(curl -s "${tags_url}" | grep -m1 '"name":' | cut -d'"' -f4 | sed 's/^v//')"
+    if [[ -z "${desired_version}" ]]; then
+      echo "Error: Failed to fetch latest tag from GitHub" >&2
+      return 1
     fi
+  fi
+  # fetch p21 script and overwrite local
+  local github_p21_url="https://raw.githubusercontent.com/aktin/p21-script/v${desired_version}/src/p21import.py"
+  echo $github_p21_url
+  local remote_version
+  if ! remote_version="$(curl -s "${github_p21_url}" | grep '^# @VERSION=' | sed 's/^# @VERSION=//')"; then
+    echo "Error: failed to fetch p21import.py for version ${desired_version}" >&2
+    return 1
+  fi
+  if [[ -z "$remote_version" ]]; then
+    echo "Error: version ${desired_version} missing @VERSION header" >&2
+    return 1
+  fi
+  mkdir -p "${dir_downloads}/import-scripts"
+  echo "Downloading P21 import script version ${remote_version}"
+  if ! curl -sSf -o "${local_p21}" "${github_p21_url}"; then
+    echo "Error: download failed" >&2
+    return 1
   fi
 }
 
