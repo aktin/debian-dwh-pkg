@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-PACKAGE_VERSION=1.7.1
+PACKAGE_VERSION=1.8
 
-AKTIN_DWH_VERSION=1.7.1
+AKTIN_DWH_VERSION=1.8
 I2B2_PACKAGE_DEPENDENCY=1.8
